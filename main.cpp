@@ -117,6 +117,10 @@ class HelloTriangleApplication {
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
 
+        if(__APPLE__) {
+            createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+        }
+
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
         if(enableValidationLayers) {
             createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
@@ -128,20 +132,6 @@ class HelloTriangleApplication {
             createInfo.enabledLayerCount = 0;
             createInfo.pNext = nullptr;
         }
-
-        // if encounter "VK_ERROR_INCOMPATIBLE_DRIVER" error
-//        std::vector<const char*> requiredExtensions;
-//
-//        for(uint32_t i = 0; i < glfwExtensionCount; i++) {
-//            requiredExtensions.emplace_back(glfwExtensions[i]);
-//        }
-//
-//        requiredExtensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-//
-//        createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-//
-//        createInfo.enabledExtensionCount = (uint32_t) requiredExtensions.size();
-//        createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
         if(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
             throw std::runtime_error("failed to create instance!");
@@ -197,6 +187,9 @@ class HelloTriangleApplication {
 
         if(enableValidationLayers) {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);    // == VK_EXT_debug_utils
+        }
+        if(__APPLE__) {
+            extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
         }
 
         return extensions;
