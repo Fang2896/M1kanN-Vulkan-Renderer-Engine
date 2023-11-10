@@ -12,9 +12,15 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/third_party/include)
 
 add_executable(HelloVulkan)
-target_sources(HelloVulkan PRIVATE  main.cpp)
+
+target_sources(HelloVulkan PRIVATE
+    main.cpp
+    m1k_window.cpp
+    m1k_device.cpp
+    m1k_pipeline.cpp
+    m1k_application.cpp
+)
 
 target_link_libraries(HelloVulkan
         ${Vulkan_LIBRARY}
-        ${PROJECT_SOURCE_DIR}/third_party/lib/glfw3/glfw3.lib
-        )
+        ${PROJECT_SOURCE_DIR}/third_party/lib/glfw3/glfw3.lib)
