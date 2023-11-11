@@ -100,6 +100,12 @@ void M1kDevice::createInstance() {
     createInfo.pApplicationInfo = &appInfo;
 
     auto extensions = getRequiredExtensions();
+
+    // for MAC system
+    if(__MACH__) {
+        createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    }
+
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
@@ -283,6 +289,11 @@ std::vector<const char *> M1kDevice::getRequiredExtensions() {
 
     if (enableValidationLayers) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
+
+    // for MAC system
+    if(__MACH__) {
+        extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
     }
 
     return extensions;

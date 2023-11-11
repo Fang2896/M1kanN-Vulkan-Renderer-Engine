@@ -9,10 +9,8 @@ include_directories(${Vulkan_INCLUDE_DIR})
 include_directories(${Vulkan_INCLUDE_DIR}/../Third-Party/Include)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/third_party/include)
 
 add_executable(HelloVulkan)
-
 target_sources(HelloVulkan PRIVATE
     main.cpp
     m1k_window.cpp
@@ -21,6 +19,20 @@ target_sources(HelloVulkan PRIVATE
     m1k_application.cpp
 )
 
-target_link_libraries(HelloVulkan
-        ${Vulkan_LIBRARY}
-        ${PROJECT_SOURCE_DIR}/third_party/lib/glfw3/glfw3.lib)
+if (WIN32)
+    include_directories(${PROJECT_SOURCE_DIR}/third_party/include)
+
+    set(GLFW_LIB_PATH ${PROJECT_SOURCE_DIR}/third_party/lib/glfw3/glfw3.lib)
+    target_link_libraries(HelloVulkan
+            ${Vulkan_LIBRARIES}
+            ${GLFW_LIB_PATH})
+
+elseif (APPLE)
+    find_package(glfw3 REQUIRED)
+    target_link_libraries(HelloVulkan ${Vulkan_LIBRARIES} glfw)
+
+else ()
+    message(FATAL_ERROR "Unsupported Platform")
+
+endif ()
+
