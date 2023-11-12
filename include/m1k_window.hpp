@@ -21,6 +21,7 @@ class M1kWindow {
     M1kWindow &operator=(const M1kWindow&) = delete;
 
     bool shouldClose() { return glfwWindowShouldClose(window_); }
+    VkExtent2D getExtent() { return {static_cast<uint32_t>(kWidth), static_cast<uint32_t>(kHeight)}; }
 
     void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
 

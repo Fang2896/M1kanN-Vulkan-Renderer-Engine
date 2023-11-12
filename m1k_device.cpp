@@ -101,10 +101,9 @@ void M1kDevice::createInstance() {
 
     auto extensions = getRequiredExtensions();
 
-    // for MAC system
-    if(__MACH__) {
+    #ifdef __MACH__
         createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-    }
+    #endif
 
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
@@ -292,9 +291,9 @@ std::vector<const char *> M1kDevice::getRequiredExtensions() {
     }
 
     // for MAC system
-    if(__MACH__) {
+    #ifdef __MACH__
         extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-    }
+    #endif
 
     return extensions;
 }

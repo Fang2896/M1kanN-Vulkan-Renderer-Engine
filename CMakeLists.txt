@@ -17,6 +17,7 @@ target_sources(HelloVulkan PRIVATE
     m1k_device.cpp
     m1k_pipeline.cpp
     m1k_application.cpp
+    m1k_swap_chain.cpp
 )
 
 if (WIN32)
