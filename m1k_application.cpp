@@ -57,8 +57,8 @@ void M1kApplication::createPipeline() {
     m1k_pipeline_ = std::make_unique<M1kPipeline>(
         m1k_device_,
         pipeline_config,
-        "../shaders/simple_shader.vert.spv",
-        "../shaders/simple_shader.frag.spv");
+        "./shaders/binaries/simple_shader.vert.spv",
+        "./shaders/binaries/simple_shader.frag.spv");
 }
 
 void M1kApplication::createCommandBuffers() {
