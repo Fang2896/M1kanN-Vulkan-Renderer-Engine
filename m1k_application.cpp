@@ -12,6 +12,7 @@
 namespace m1k {
 
 M1kApplication::M1kApplication() {
+    loadModels();
     createPipelineLayout();
     createPipeline();
     createCommandBuffers();
@@ -28,6 +29,16 @@ void M1kApplication::run() {
     }
 
     vkDeviceWaitIdle(m1k_device_.device());
+}
+
+void M1kApplication::loadModels() {
+    std::vector<M1kModel::Vertex> vertices {
+        {{0.0f, -0.5f}},
+        {{0.5f, 0.5f}},
+        {{-0.5f, 0.5f}}
+    };
+
+    m1K_model_ = std::make_unique<M1kModel>(m1k_device_, vertices);
 }
 
 void M1kApplication::createPipelineLayout() {
@@ -57,27 +68,29 @@ void M1kApplication::createPipeline() {
     m1k_pipeline_ = std::make_unique<M1kPipeline>(
         m1k_device_,
         pipeline_config,
-        "../shaders/simple_shader.vert.spv",
-        "../shaders/simple_shader.frag.spv");
+        "./shaders/binaries/simple_shader.vert.spv",
+        "./shaders/binaries/simple_shader.frag.spv");
 }
 
 void M1kApplication::createCommandBuffers() {
-    command_buffers.resize(m1k_swap_chain_.imageCount());
+    command_buffers_.resize(m1k_swap_chain_.imageCount());
+
     VkCommandBufferAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     alloc_info.commandPool = m1k_device_.getCommandPool();
-    alloc_info.commandBufferCount = static_cast<uint32_t>(command_buffers.size());
+    alloc_info.commandBufferCount = static_cast<uint32_t>(command_buffers_.size());
 
-    if(vkAllocateCommandBuffers(m1k_device_.device(), &alloc_info, command_buffers.data()) != VK_SUCCESS) {
+    if(vkAllocateCommandBuffers(m1k_device_.device(), &alloc_info,
+                                 command_buffers_.data()) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate command buffers");
     }
 
-    for(int i = 0; i < command_buffers.size(); i++) {
+    for(int i = 0; i < command_buffers_.size(); i++) {
         VkCommandBufferBeginInfo begin_info{};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-        if(vkBeginCommandBuffer(command_buffers[i], &begin_info) != VK_SUCCESS) {
+        if(vkBeginCommandBuffer(command_buffers_[i], &begin_info) != VK_SUCCESS) {
             throw std::runtime_error("failed to begin recording command buffer");
         }
 
@@ -95,13 +108,14 @@ void M1kApplication::createCommandBuffers() {
         render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
         render_pass_info.pClearValues = clear_values.data();
 
-        vkCmdBeginRenderPass(command_buffers[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(command_buffers_[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
-        m1k_pipeline_->bind(command_buffers[i]);
-        vkCmdDraw(command_buffers[i], 3, 1, 0, 0);
+        m1k_pipeline_->bind(command_buffers_[i]);
+        m1K_model_->bind(command_buffers_[i]);
+        m1K_model_->draw(command_buffers_[i]);
 
-        vkCmdEndRenderPass(command_buffers[i]);
-        if(vkEndCommandBuffer(command_buffers[i]) != VK_SUCCESS) {
+        vkCmdEndRenderPass(command_buffers_[i]);
+        if(vkEndCommandBuffer(command_buffers_[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to record command buffer");
         }
     }
@@ -115,7 +129,7 @@ void M1kApplication::drawFrame() {
         throw std::runtime_error("failed to acquire swap chain image");
     }
 
-    result = m1k_swap_chain_.submitCommandBuffers(&command_buffers[image_index], &image_index);
+    result = m1k_swap_chain_.submitCommandBuffers(&command_buffers_[image_index], &image_index);
 
     if(result != VK_SUCCESS) {
         throw std::runtime_error("failed to present swap chain image");

@@ -3,6 +3,7 @@
 //
 
 #include "m1k_pipeline.hpp"
+#include "m1k_model.hpp"
 
 // std
 #include <fstream>
@@ -153,12 +154,15 @@ void M1kPipeline::createGraphicPipeline(const PipelineConfigInfo& config_info,
     shader_stages[1].pNext = nullptr;
     shader_stages[1].pSpecializationInfo = nullptr;
 
+    auto binding_descriptions = M1kModel::Vertex::getBindingDescriptions();
+    auto attribute_descriptions = M1kModel::Vertex::getAttributeDescriptions();
+
     VkPipelineVertexInputStateCreateInfo vertex_input_info{};
     vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertex_input_info.vertexAttributeDescriptionCount = 0;
-    vertex_input_info.vertexBindingDescriptionCount = 0;
-    vertex_input_info.pVertexAttributeDescriptions = nullptr;
-    vertex_input_info.pVertexBindingDescriptions = nullptr;
+    vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
+    vertex_input_info.vertexBindingDescriptionCount = static_cast<uint32_t>(binding_descriptions.size());;
+    vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions.data();
+    vertex_input_info.pVertexBindingDescriptions = binding_descriptions.data();
 
     VkPipelineViewportStateCreateInfo viewport_info{};
     viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

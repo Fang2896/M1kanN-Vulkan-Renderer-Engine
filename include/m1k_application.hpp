@@ -8,6 +8,7 @@
 #include "m1k_pipeline.hpp"
 #include "m1k_device.hpp"
 #include "m1k_swap_chain.hpp"
+#include "m1k_model.hpp"
 
 // std
 #include <memory>
@@ -29,6 +30,7 @@ class M1kApplication {
     void run();
 
    private:
+    void loadModels();
     void createPipelineLayout();
     void createPipeline();
     void createCommandBuffers();
@@ -39,8 +41,8 @@ class M1kApplication {
     M1kSwapChain m1k_swap_chain_{m1k_device_, m1k_window_.getExtent()};
     std::unique_ptr<M1kPipeline> m1k_pipeline_;
     VkPipelineLayout pipeline_layout_;
-    std::vector<VkCommandBuffer> command_buffers;
-
+    std::vector<VkCommandBuffer> command_buffers_;
+    std::unique_ptr<M1kModel> m1K_model_;
 };
 
 }
