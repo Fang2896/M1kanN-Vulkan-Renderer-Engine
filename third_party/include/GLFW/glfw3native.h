@@ -18,10 +18,10 @@
  *    in a product, an acknowledgment in the product documentation would
  *    be appreciated but is not required.
  *
- * 2. Altered source versions must be plainly marked as such, and must not
+ * 2. Altered sources versions must be plainly marked as such, and must not
  *    be misrepresented as being the original software.
  *
- * 3. This notice may not be removed or altered from any source
+ * 3. This notice may not be removed or altered from any sources
  *    distribution.
  *
  *************************************************************************/

@@ -18,10 +18,10 @@
  *    in a product, an acknowledgment in the product documentation would
  *    be appreciated but is not required.
  *
- * 2. Altered source versions must be plainly marked as such, and must not
+ * 2. Altered sources versions must be plainly marked as such, and must not
  *    be misrepresented as being the original software.
  *
- * 3. This notice may not be removed or altered from any source
+ * 3. This notice may not be removed or altered from any sources
  *    distribution.
  *
  *************************************************************************/
@@ -726,7 +726,7 @@ extern "C" {
  *  Some pre-installed Windows graphics drivers do not support OpenGL.  AMD only
  *  supports OpenGL ES via EGL, while Nvidia and Intel only support it via
  *  a WGL or GLX extension.  macOS does not provide OpenGL ES at all.  The Mesa
- *  EGL, OpenGL and OpenGL ES libraries do not interface with the Nvidia binary
+ *  EGL, OpenGL and OpenGL ES libraries do not interface with the Nvidia binaries
  *  driver.  Older graphics drivers do not support Vulkan.
  */
 #define GLFW_API_UNAVAILABLE        0x00010006
@@ -1892,14 +1892,14 @@ GLFWAPI void glfwGetVersion(int* major, int* minor, int* rev);
 /*! @brief Returns a string describing the compile-time configuration.
  *
  *  This function returns the compile-time generated
- *  [version string](@ref intro_version_string) of the GLFW library binary.  It
+ *  [version string](@ref intro_version_string) of the GLFW library binaries.  It
  *  describes the version, platform, compiler and any platform-specific
  *  compile-time options.  It should not be confused with the OpenGL or OpenGL
  *  ES version string, queried with `glGetString`.
  *
  *  __Do not use the version string__ to parse the GLFW library version.  The
  *  @ref glfwGetVersion function provides the version of the running library
- *  binary in numerical format.
+ *  binaries in numerical format.
  *
  *  @return The ASCII encoded GLFW version string.
  *
@@ -2643,7 +2643,7 @@ GLFWAPI void glfwWindowHintString(int hint, const char* value);
  *  [High Resolution Guidelines for OS X](https://developer.apple.com/library/mac/documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/Explained/Explained.html)
  *  in the Mac Developer Library.  The GLFW test and example programs use
  *  a custom `Info.plist` template for this, which can be found as
- *  `CMake/MacOSXBundleInfo.plist.in` in the source tree.
+ *  `CMake/MacOSXBundleInfo.plist.in` in the sources tree.
  *
  *  @remark @macos When activating frame autosaving with
  *  [GLFW_COCOA_FRAME_NAME](@ref GLFW_COCOA_FRAME_NAME_hint), the specified
@@ -5187,7 +5187,7 @@ GLFWAPI GLFWjoystickfun glfwSetJoystickCallback(GLFWjoystickfun callback);
  *  internal list with any gamepad mappings it finds.  This string may
  *  contain either a single gamepad mapping or many mappings separated by
  *  newlines.  The parser supports the full format of the `gamecontrollerdb.txt`
- *  source file including empty lines and comments.
+ *  sources file including empty lines and comments.
  *
  *  See @ref gamepad_mapping for a description of the format.
  *
@@ -5351,7 +5351,7 @@ GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window);
  *
  *  The resolution of the timer is system dependent, but is usually on the order
  *  of a few micro- or nanoseconds.  It uses the highest-resolution monotonic
- *  time source on each supported platform.
+ *  time sources on each supported platform.
  *
  *  @return The current time, in seconds, or zero if an
  *  [error](@ref error_handling) occurred.
