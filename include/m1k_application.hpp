@@ -5,10 +5,9 @@
 #pragma once
 
 #include "m1k_window.hpp"
-#include "m1k_pipeline.hpp"
 #include "m1k_device.hpp"
-#include "m1k_swap_chain.hpp"
 #include "m1k_game_object.hpp"
+#include "m1k_renderer.hpp"
 
 // std
 #include <memory>
@@ -31,22 +30,11 @@ class M1kApplication {
 
    private:
     void loadGameObjects();
-    void createPipelineLayout();
-    void createPipeline();
-    void createCommandBuffers();
-    void freeCommandBuffers();
-    void drawFrame();
-    void recreateSwapChain();
-    void recordCommandBuffer(int image_index);
-    void renderGameObjects(VkCommandBuffer command_buffer);
 
     M1kWindow m1k_window_{kWidth, kHeight, "Hello Vulkan"};
     M1kDevice m1k_device_{m1k_window_};
-    std::unique_ptr<M1kSwapChain> m1k_swap_chain_;
-    std::unique_ptr<M1kPipeline> m1k_pipeline_;
-    VkPipelineLayout pipeline_layout_;
+    M1kRenderer m1k_renderer{m1k_window_, m1k_device_};
 
-    std::vector<VkCommandBuffer> command_buffers_;
     std::vector<M1kGameObject> game_objects_;
 };
 

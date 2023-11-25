@@ -30,6 +30,8 @@ target_sources(HelloVulkan PRIVATE
         m1k_application.cpp
         m1k_swap_chain.cpp
         m1k_model.cpp
+        m1k_renderer.cpp
+        simple_render_system.cpp
         )
 
 if (WIN32)
