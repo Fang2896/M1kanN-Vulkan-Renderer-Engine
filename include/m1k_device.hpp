@@ -40,7 +40,7 @@ class M1kDevice {
 
     // Not copyable or movable
     M1kDevice(const M1kDevice &) = delete;
-    void operator=(const M1kDevice &) = delete;
+    M1kDevice operator=(const M1kDevice &) = delete;
     M1kDevice(M1kDevice &&) = delete;
     M1kDevice &operator=(M1kDevice &&) = delete;
 

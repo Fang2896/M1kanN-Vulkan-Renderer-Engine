@@ -10,7 +10,7 @@
 namespace m1k {
 
 M1kWindow::M1kWindow(int w, int h, std::string name)
-    : kWidth(w), kHeight(h), window_name_(name)
+    : width_(w), height_(h), window_name_(name)
 {
     initWindow();
 }
@@ -20,13 +20,24 @@ M1kWindow::~M1kWindow() {
     glfwTerminate();
 }
 
+void M1kWindow::framebufferResizeCallback(GLFWwindow *window, int width, int height) {
+    auto m1k_window = reinterpret_cast<M1kWindow*>(glfwGetWindowUserPointer(window));
+    m1k_window->framebuffer_resized = true;
+    m1k_window->width_ = width;
+    m1k_window->height_ = height;
+}
+
 void M1kWindow::initWindow() {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-    window_ = glfwCreateWindow(kWidth, kHeight, window_name_.c_str(), nullptr, nullptr);
+    window_ = glfwCreateWindow(width_, height_, window_name_.c_str(), nullptr, nullptr);
+    glfwSetWindowUserPointer(window_, this);
+    glfwSetFramebufferSizeCallback(window_, framebufferResizeCallback);
 }
+
+
 
 void M1kWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface) {
     if(glfwCreateWindowSurface(instance, window_, nullptr, surface) != VK_SUCCESS) {

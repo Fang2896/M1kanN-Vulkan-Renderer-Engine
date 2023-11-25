@@ -34,11 +34,14 @@ class M1kApplication {
     void createPipelineLayout();
     void createPipeline();
     void createCommandBuffers();
+    void freeCommandBuffers();
     void drawFrame();
+    void recreateSwapChain();
+    void recordCommandBuffer(int image_index);
 
     M1kWindow m1k_window_{kWidth, kHeight, "Hello Vulkan"};
     M1kDevice m1k_device_{m1k_window_};
-    M1kSwapChain m1k_swap_chain_{m1k_device_, m1k_window_.getExtent()};
+    std::unique_ptr<M1kSwapChain> m1k_swap_chain_;
     std::unique_ptr<M1kPipeline> m1k_pipeline_;
     VkPipelineLayout pipeline_layout_;
     std::vector<VkCommandBuffer> command_buffers_;

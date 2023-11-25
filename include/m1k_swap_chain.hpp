@@ -12,6 +12,7 @@
 // std lib headers
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace m1k {
 
@@ -20,10 +21,11 @@ class M1kSwapChain {
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
      M1kSwapChain( M1kDevice &deviceRef, VkExtent2D windowExtent);
-    ~ M1kSwapChain();
+     M1kSwapChain( M1kDevice &deviceRef, VkExtent2D windowExtent, std::shared_ptr<M1kSwapChain> previous);
+     ~M1kSwapChain();
 
-     M1kSwapChain(const  M1kSwapChain &) = delete;
-    void operator=(const  M1kSwapChain &) = delete;
+    M1kSwapChain(const  M1kSwapChain &) = delete;
+    M1kSwapChain operator=(const  M1kSwapChain &) = delete;
 
     VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
     VkRenderPass getRenderPass() { return renderPass; }
@@ -43,6 +45,7 @@ class M1kSwapChain {
     VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
    private:
+    void init();
     void createSwapChain();
     void createImageViews();
     void createDepthResources();
@@ -73,6 +76,7 @@ class M1kSwapChain {
     VkExtent2D windowExtent;
 
     VkSwapchainKHR swapChain;
+    std::shared_ptr<M1kSwapChain> oldSwapChain;
 
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;

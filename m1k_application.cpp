@@ -14,7 +14,7 @@ namespace m1k {
 M1kApplication::M1kApplication() {
     loadModels();
     createPipelineLayout();
-    createPipeline();
+    recreateSwapChain();
     createCommandBuffers();
 }
 
@@ -58,12 +58,12 @@ void M1kApplication::createPipelineLayout() {
 }
 
 void M1kApplication::createPipeline() {
+    assert(m1k_swap_chain_ != nullptr && "Cannot create pipeline before swap chain");
+    assert(pipeline_layout_ != nullptr && "Cannot create pipeline before pipeline layout");
+
     PipelineConfigInfo pipeline_config{};
-    M1kPipeline::defaultPipelineConfigInfo(
-        pipeline_config,
-        m1k_swap_chain_.width(),
-        m1k_swap_chain_.height());
-    pipeline_config.render_pass = m1k_swap_chain_.getRenderPass();
+    M1kPipeline::defaultPipelineConfigInfo(pipeline_config);
+    pipeline_config.render_pass = m1k_swap_chain_->getRenderPass();
     pipeline_config.pipeline_layout = pipeline_layout_;
     m1k_pipeline_ = std::make_unique<M1kPipeline>(
         m1k_device_,
@@ -72,8 +72,33 @@ void M1kApplication::createPipeline() {
         "./shaders/binaries/simple_shader.frag.spv");
 }
 
+void M1kApplication::recreateSwapChain() {
+    auto extent = m1k_window_.getExtent();
+    while(extent.width == 0 || extent.height == 0) {
+        extent = m1k_window_.getExtent();
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(m1k_device_.device());
+
+//    // if omit this line, resize will crash with "fail create swap chain"
+//    m1k_swap_chain_.reset(nullptr);
+
+    if(m1k_swap_chain_ == nullptr) {
+        m1k_swap_chain_ = std::make_unique<M1kSwapChain>(m1k_device_, extent);
+    } else {
+        m1k_swap_chain_ = std::make_unique<M1kSwapChain>(m1k_device_, extent, std::move(m1k_swap_chain_));
+        if(m1k_swap_chain_->imageCount() != command_buffers_.size()) {
+            freeCommandBuffers();
+            createCommandBuffers();
+        }
+    }
+
+    createPipeline();
+}
+
 void M1kApplication::createCommandBuffers() {
-    command_buffers_.resize(m1k_swap_chain_.imageCount());
+    command_buffers_.resize(m1k_swap_chain_->imageCount());
 
     VkCommandBufferAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -85,51 +110,84 @@ void M1kApplication::createCommandBuffers() {
                                  command_buffers_.data()) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate command buffers");
     }
+}
 
-    for(int i = 0; i < command_buffers_.size(); i++) {
-        VkCommandBufferBeginInfo begin_info{};
-        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+void M1kApplication::freeCommandBuffers() {
+    vkFreeCommandBuffers(
+        m1k_device_.device(),
+        m1k_device_.getCommandPool(),
+        static_cast<uint32_t>(command_buffers_.size()),
+        command_buffers_.data());
 
-        if(vkBeginCommandBuffer(command_buffers_[i], &begin_info) != VK_SUCCESS) {
-            throw std::runtime_error("failed to begin recording command buffer");
-        }
+    command_buffers_.clear();
+}
 
-        VkRenderPassBeginInfo render_pass_info{};
-        render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        render_pass_info.renderPass = m1k_swap_chain_.getRenderPass();
-        render_pass_info.framebuffer = m1k_swap_chain_.getFrameBuffer(i);
+void M1kApplication::recordCommandBuffer(int image_index) {
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-        render_pass_info.renderArea.offset = {0, 0};
-        render_pass_info.renderArea.extent = m1k_swap_chain_.getSwapChainExtent();  // not windows extent
+    if(vkBeginCommandBuffer(command_buffers_[image_index], &begin_info) != VK_SUCCESS) {
+        throw std::runtime_error("failed to begin recording command buffer");
+    }
 
-        std::array<VkClearValue, 2> clear_values{};
-        clear_values[0].color = {0.1f, 0.1f, 0.1f, 1.0f};   // attachment
-        clear_values[1].depthStencil = {1.0f, 0};
-        render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
-        render_pass_info.pClearValues = clear_values.data();
+    VkRenderPassBeginInfo render_pass_info{};
+    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    render_pass_info.renderPass = m1k_swap_chain_->getRenderPass();
+    render_pass_info.framebuffer = m1k_swap_chain_->getFrameBuffer(image_index);
 
-        vkCmdBeginRenderPass(command_buffers_[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+    render_pass_info.renderArea.offset = {0, 0};
+    render_pass_info.renderArea.extent = m1k_swap_chain_->getSwapChainExtent();  // not windows extent
 
-        m1k_pipeline_->bind(command_buffers_[i]);
-        m1K_model_->bind(command_buffers_[i]);
-        m1K_model_->draw(command_buffers_[i]);
+    std::array<VkClearValue, 2> clear_values{};
+    clear_values[0].color = {0.1f, 0.1f, 0.1f, 1.0f};   // attachment
+    clear_values[1].depthStencil = {1.0f, 0};
+    render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
+    render_pass_info.pClearValues = clear_values.data();
 
-        vkCmdEndRenderPass(command_buffers_[i]);
-        if(vkEndCommandBuffer(command_buffers_[i]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to record command buffer");
-        }
+    vkCmdBeginRenderPass(command_buffers_[image_index], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(m1k_swap_chain_->getSwapChainExtent().width);
+    viewport.height = static_cast<float>(m1k_swap_chain_->getSwapChainExtent().height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    VkRect2D scissor{{0, 0}, m1k_swap_chain_->getSwapChainExtent()};
+    vkCmdSetViewport(command_buffers_[image_index], 0, 1, &viewport);
+    vkCmdSetScissor(command_buffers_[image_index], 0, 1, &scissor);
+
+    m1k_pipeline_->bind(command_buffers_[image_index]);
+    m1K_model_->bind(command_buffers_[image_index]);
+    m1K_model_->draw(command_buffers_[image_index]);
+
+    vkCmdEndRenderPass(command_buffers_[image_index]);
+    if(vkEndCommandBuffer(command_buffers_[image_index]) != VK_SUCCESS) {
+        throw std::runtime_error("failed to record command buffer");
     }
 }
 
 void M1kApplication::drawFrame() {
     uint32_t image_index;
-    auto result = m1k_swap_chain_.acquireNextImage(&image_index);
+    auto result = m1k_swap_chain_->acquireNextImage(&image_index);
+
+    if(result == VK_ERROR_OUT_OF_DATE_KHR) {
+        recreateSwapChain();
+        return;
+    }
 
     if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("failed to acquire swap chain image");
     }
 
-    result = m1k_swap_chain_.submitCommandBuffers(&command_buffers_[image_index], &image_index);
+    recordCommandBuffer(image_index);
+    result = m1k_swap_chain_->submitCommandBuffers(&command_buffers_[image_index], &image_index);
+
+    if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m1k_window_.wasWindowResized()) {
+        m1k_window_.resetWindowResizedFlag();
+        recreateSwapChain();
+        return;
+    }
 
     if(result != VK_SUCCESS) {
         throw std::runtime_error("failed to present swap chain image");

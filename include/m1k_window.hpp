@@ -21,15 +21,19 @@ class M1kWindow {
     M1kWindow &operator=(const M1kWindow&) = delete;
 
     bool shouldClose() { return glfwWindowShouldClose(window_); }
-    VkExtent2D getExtent() { return {static_cast<uint32_t>(kWidth), static_cast<uint32_t>(kHeight)}; }
+    VkExtent2D getExtent() { return {static_cast<uint32_t>(width_), static_cast<uint32_t>(height_)}; }
+    bool wasWindowResized() { return framebuffer_resized; }
+    void resetWindowResizedFlag() { framebuffer_resized = false; }
 
     void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
 
    private:
+    static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
     void initWindow();
 
-    const int kWidth;
-    const int kHeight;
+    int width_;
+    int height_;
+    bool framebuffer_resized = false;
 
     std::string window_name_;
     GLFWwindow * window_;

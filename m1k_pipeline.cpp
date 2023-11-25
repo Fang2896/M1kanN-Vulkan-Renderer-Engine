@@ -49,20 +49,16 @@ void M1kPipeline::bind(VkCommandBuffer command_buffer) {
 }
 
 // note the copy issue of pipeline config
-void M1kPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& config_info, uint32_t width, uint32_t height) {
+void M1kPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& config_info) {
     config_info.input_assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     config_info.input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     config_info.input_assembly_info.primitiveRestartEnable = VK_FALSE;
 
-    config_info.viewport.x = 0.0f;
-    config_info.viewport.y = 0.0f;
-    config_info.viewport.width = static_cast<float>(width);
-    config_info.viewport.height = static_cast<float>(height);
-    config_info.viewport.minDepth = 0.0f;
-    config_info.viewport.maxDepth = 1.0f;
-
-    config_info.scissor.offset = {0, 0};
-    config_info.scissor.extent = {width, height};
+    config_info.viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    config_info.viewport_info.viewportCount = 1;
+    config_info.viewport_info.pViewports = nullptr;
+    config_info.viewport_info.scissorCount = 1;
+    config_info.viewport_info.pScissors = nullptr;
 
     config_info.rasterization_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     config_info.rasterization_info.depthClampEnable = VK_FALSE;
@@ -115,6 +111,14 @@ void M1kPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& config_info, uin
     config_info.depth_stencil_info.stencilTestEnable = VK_FALSE;
     config_info.depth_stencil_info.front = {};  // Optional
     config_info.depth_stencil_info.back = {};   // Optional
+
+    // pipeline -> dynamic viewport/scissor
+    config_info.dynamics_state_enables = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+    config_info.dynamic_state_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    config_info.dynamic_state_info.pDynamicStates = config_info.dynamics_state_enables.data();
+    config_info.dynamic_state_info.dynamicStateCount =
+        static_cast<uint32_t>(config_info.dynamics_state_enables.size());
+    config_info.dynamic_state_info.flags = 0;
 }
 
 void M1kPipeline::createGraphicPipeline(const PipelineConfigInfo& config_info,
@@ -160,16 +164,9 @@ void M1kPipeline::createGraphicPipeline(const PipelineConfigInfo& config_info,
     VkPipelineVertexInputStateCreateInfo vertex_input_info{};
     vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
-    vertex_input_info.vertexBindingDescriptionCount = static_cast<uint32_t>(binding_descriptions.size());;
+    vertex_input_info.vertexBindingDescriptionCount = static_cast<uint32_t>(binding_descriptions.size());
     vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions.data();
     vertex_input_info.pVertexBindingDescriptions = binding_descriptions.data();
-
-    VkPipelineViewportStateCreateInfo viewport_info{};
-    viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewport_info.viewportCount = 1;
-    viewport_info.pViewports = &config_info.viewport;
-    viewport_info.scissorCount = 1;
-    viewport_info.pScissors = &config_info.scissor;
 
     // last
     VkGraphicsPipelineCreateInfo pipeline_info{};
@@ -178,12 +175,12 @@ void M1kPipeline::createGraphicPipeline(const PipelineConfigInfo& config_info,
     pipeline_info.pStages = shader_stages;
     pipeline_info.pVertexInputState = &vertex_input_info;
     pipeline_info.pInputAssemblyState = &config_info.input_assembly_info;
-    pipeline_info.pViewportState = &viewport_info;
+    pipeline_info.pViewportState = &config_info.viewport_info;
     pipeline_info.pRasterizationState = &config_info.rasterization_info;
     pipeline_info.pMultisampleState = &config_info.multisample_info;
     pipeline_info.pColorBlendState = &config_info.color_blend_info;
     pipeline_info.pDepthStencilState = &config_info.depth_stencil_info;
-    pipeline_info.pDynamicState = nullptr;
+    pipeline_info.pDynamicState = &config_info.dynamic_state_info;
 
     pipeline_info.layout = config_info.pipeline_layout;
     pipeline_info.renderPass = config_info.render_pass;

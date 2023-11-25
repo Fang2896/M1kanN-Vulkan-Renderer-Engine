@@ -19,14 +19,17 @@ struct PipelineConfigInfo {
     PipelineConfigInfo(const PipelineConfigInfo&) = delete;
     PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
-    VkViewport viewport;
-    VkRect2D scissor;
+    VkPipelineViewportStateCreateInfo viewport_info;
     VkPipelineInputAssemblyStateCreateInfo input_assembly_info;
     VkPipelineRasterizationStateCreateInfo rasterization_info;
     VkPipelineMultisampleStateCreateInfo multisample_info;
     VkPipelineColorBlendAttachmentState color_blend_attachment;
     VkPipelineColorBlendStateCreateInfo color_blend_info;
     VkPipelineDepthStencilStateCreateInfo depth_stencil_info;
+
+    std::vector<VkDynamicState> dynamics_state_enables;
+    VkPipelineDynamicStateCreateInfo dynamic_state_info;
+
     VkPipelineLayout pipeline_layout = nullptr;
     VkRenderPass render_pass = nullptr;
 
@@ -36,6 +39,7 @@ struct PipelineConfigInfo {
 
 class M1kPipeline {
    public:
+    M1kPipeline() = default;
     M1kPipeline(M1kDevice& device,
                 const PipelineConfigInfo& config_info,
                 const std::string& vert_filepath,
@@ -44,10 +48,10 @@ class M1kPipeline {
     ~M1kPipeline();
 
     M1kPipeline(const M1kPipeline&) = delete;
-    void operator=(const M1kPipeline&) = delete;
+    M1kPipeline operator=(const M1kPipeline&) = delete;
 
     void bind(VkCommandBuffer command_buffer);
-    static void defaultPipelineConfigInfo(PipelineConfigInfo& config_info ,uint32_t width, uint32_t height);
+    static void defaultPipelineConfigInfo(PipelineConfigInfo& config_info);
 
    private:
     static std::vector<char> readFile(const std::string& filepath);
