@@ -4,12 +4,22 @@
 
 #include "m1k_application.hpp"
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+
 // std
 #include <stdexcept>
 #include <array>
+#include <iostream>
 
 
 namespace m1k {
+
+struct SimplePushConstantData {
+    glm::vec2 offset;
+    alignas(16) glm::vec3 color;
+};
 
 M1kApplication::M1kApplication() {
     loadModels();
@@ -23,6 +33,8 @@ M1kApplication::~M1kApplication() {
 }
 
 void M1kApplication::run() {
+    std::cout << "max push constant size: " << m1k_device_.properties.limits.maxPushConstantsSize << "\n";
+
     while(!m1k_window_.shouldClose()) {
         glfwPollEvents();
         drawFrame();
@@ -42,12 +54,18 @@ void M1kApplication::loadModels() {
 }
 
 void M1kApplication::createPipelineLayout() {
+
+    VkPushConstantRange push_constant_range{};
+    push_constant_range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    push_constant_range.offset = 0;
+    push_constant_range.size = sizeof(SimplePushConstantData);
+
     VkPipelineLayoutCreateInfo pipeline_layout_info{};
     pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipeline_layout_info.setLayoutCount = 0;
     pipeline_layout_info.pSetLayouts = nullptr;
-    pipeline_layout_info.pushConstantRangeCount = 0;
-    pipeline_layout_info.pPushConstantRanges = nullptr;
+    pipeline_layout_info.pushConstantRangeCount = 1;
+    pipeline_layout_info.pPushConstantRanges = &push_constant_range;
 
     if(vkCreatePipelineLayout(m1k_device_.device(),
                                &pipeline_layout_info,
@@ -123,6 +141,9 @@ void M1kApplication::freeCommandBuffers() {
 }
 
 void M1kApplication::recordCommandBuffer(int image_index) {
+    static int frame = 0;
+    frame = (frame + 1) % 6000;
+
     VkCommandBufferBeginInfo begin_info{};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -139,7 +160,7 @@ void M1kApplication::recordCommandBuffer(int image_index) {
     render_pass_info.renderArea.extent = m1k_swap_chain_->getSwapChainExtent();  // not windows extent
 
     std::array<VkClearValue, 2> clear_values{};
-    clear_values[0].color = {0.1f, 0.1f, 0.1f, 1.0f};   // attachment
+    clear_values[0].color = {0.01f, 0.01f, 0.01f, 1.0f};   // attachment
     clear_values[1].depthStencil = {1.0f, 0};
     render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
     render_pass_info.pClearValues = clear_values.data();
@@ -159,7 +180,20 @@ void M1kApplication::recordCommandBuffer(int image_index) {
 
     m1k_pipeline_->bind(command_buffers_[image_index]);
     m1K_model_->bind(command_buffers_[image_index]);
-    m1K_model_->draw(command_buffers_[image_index]);
+
+    for(int j = 0; j < 4; j++) {
+        SimplePushConstantData push{};
+        push.offset = {-0.5f + frame * 0.0005f, -0.4f + j * 0.25f};
+        push.color = {0.0f, 0.0f, 0.2f + 0.2f * j};
+
+        vkCmdPushConstants(command_buffers_[image_index],
+                           pipeline_layout_,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           0,
+                           sizeof(SimplePushConstantData),
+                           &push);
+        m1K_model_->draw(command_buffers_[image_index]);
+    }
 
     vkCmdEndRenderPass(command_buffers_[image_index]);
     if(vkEndCommandBuffer(command_buffers_[image_index]) != VK_SUCCESS) {
