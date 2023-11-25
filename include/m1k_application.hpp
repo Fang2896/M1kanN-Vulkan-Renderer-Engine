@@ -8,7 +8,7 @@
 #include "m1k_pipeline.hpp"
 #include "m1k_device.hpp"
 #include "m1k_swap_chain.hpp"
-#include "m1k_model.hpp"
+#include "m1k_game_object.hpp"
 
 // std
 #include <memory>
@@ -30,7 +30,7 @@ class M1kApplication {
     void run();
 
    private:
-    void loadModels();
+    void loadGameObjects();
     void createPipelineLayout();
     void createPipeline();
     void createCommandBuffers();
@@ -38,14 +38,16 @@ class M1kApplication {
     void drawFrame();
     void recreateSwapChain();
     void recordCommandBuffer(int image_index);
+    void renderGameObjects(VkCommandBuffer command_buffer);
 
     M1kWindow m1k_window_{kWidth, kHeight, "Hello Vulkan"};
     M1kDevice m1k_device_{m1k_window_};
     std::unique_ptr<M1kSwapChain> m1k_swap_chain_;
     std::unique_ptr<M1kPipeline> m1k_pipeline_;
     VkPipelineLayout pipeline_layout_;
+
     std::vector<VkCommandBuffer> command_buffers_;
-    std::unique_ptr<M1kModel> m1K_model_;
+    std::vector<M1kGameObject> game_objects_;
 };
 
 }
