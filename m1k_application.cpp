@@ -33,9 +33,9 @@ void M1kApplication::run() {
 
 void M1kApplication::loadModels() {
     std::vector<M1kModel::Vertex> vertices {
-        {{0.0f, -0.5f}},
-        {{0.5f, 0.5f}},
-        {{-0.5f, 0.5f}}
+        {{0.0f, -0.5f}, {1,0,0}},
+        {{0.5f, 0.5f}, {0,1,0}},
+        {{-0.5f, 0.5f}, {0,0,1}}
     };
 
     m1K_model_ = std::make_unique<M1kModel>(m1k_device_, vertices);
