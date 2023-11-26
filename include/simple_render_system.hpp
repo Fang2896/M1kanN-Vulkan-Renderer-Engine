@@ -7,6 +7,7 @@
 #include "m1k_device.hpp"
 #include "m1k_pipeline.hpp"
 #include "m1k_game_object.hpp"
+#include "m1k_camera.hpp"
 
 // std
 #include <memory>
@@ -22,7 +23,10 @@ class SimpleRenderSystem {
     SimpleRenderSystem(const SimpleRenderSystem&) = delete;
     SimpleRenderSystem &operator=(const SimpleRenderSystem&) = delete;
 
-    void renderGameObjects(VkCommandBuffer command_buffer, std::vector<M1kGameObject> &game_objects);
+    void renderGameObjects(
+        VkCommandBuffer command_buffer,
+        std::vector<M1kGameObject> &game_objects,
+        const M1kCamera &camera);
 
    private:
     void createPipelineLayout();

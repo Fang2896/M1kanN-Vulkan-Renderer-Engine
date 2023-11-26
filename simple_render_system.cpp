@@ -18,8 +18,7 @@
 namespace m1k {
 
 struct SimplePushConstantData {
-    glm::mat2 transform{1.0f};
-    glm::vec2 offset;
+    glm::mat4 transform{1.0f};
     alignas(16) glm::vec3 color;
 };
 
@@ -69,16 +68,20 @@ void SimpleRenderSystem::createPipeline(VkRenderPass render_pass) {
         "./shaders/binaries/simple_shader.frag.spv");
 }
 
-void SimpleRenderSystem::renderGameObjects(VkCommandBuffer command_buffer, std::vector<M1kGameObject> &game_objects) {
+void SimpleRenderSystem::renderGameObjects(
+    VkCommandBuffer command_buffer,
+    std::vector<M1kGameObject> &game_objects,
+    const M1kCamera &camera) {
+
     m1k_pipeline_->bind(command_buffer);
 
     for(auto& obj : game_objects) {
-        obj.transform_2d_component.rotation = glm::mod(obj.transform_2d_component.rotation + 0.0001f, glm::two_pi<float>());
+        obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.00018f, glm::two_pi<float>());
+        obj.transform.rotation.x = glm::mod(obj.transform.rotation.x + 0.00009f, glm::two_pi<float>());
 
         SimplePushConstantData push{};
-        push.offset = obj.transform_2d_component.translation;
         push.color = obj.color;
-        push.transform = obj.transform_2d_component.mat2();
+        push.transform = camera.getProjection() * obj.transform.mat4();
 
         vkCmdPushConstants(command_buffer,
                            pipeline_layout_,

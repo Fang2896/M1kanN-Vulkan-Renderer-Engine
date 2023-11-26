@@ -33,7 +33,7 @@ class M1kApplication {
 
     M1kWindow m1k_window_{kWidth, kHeight, "Hello Vulkan"};
     M1kDevice m1k_device_{m1k_window_};
-    M1kRenderer m1k_renderer{m1k_window_, m1k_device_};
+    M1kRenderer m1k_renderer_{m1k_window_, m1k_device_};
 
     std::vector<M1kGameObject> game_objects_;
 };

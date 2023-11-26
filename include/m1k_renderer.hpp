@@ -26,6 +26,7 @@ class M1kRenderer {
     M1kRenderer &operator=(const M1kRenderer&) = delete;
 
     VkRenderPass getSwapChainRenderPass() const { return m1k_swap_chain_->getRenderPass(); }
+    float getAspectRatio() const { return m1k_swap_chain_->extentAspectRatio(); }
     bool isFrameInProgress() const { return is_frame_started; }
 
     VkCommandBuffer getCurrentCommandBuffer() const {

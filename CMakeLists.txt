@@ -31,6 +31,7 @@ target_sources(HelloVulkan PRIVATE
         m1k_swap_chain.cpp
         m1k_model.cpp
         m1k_renderer.cpp
+        m1k_camera.cpp
         simple_render_system.cpp
         )
 
