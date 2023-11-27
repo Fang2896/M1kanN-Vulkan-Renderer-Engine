@@ -33,6 +33,7 @@ target_sources(HelloVulkan PRIVATE
         m1k_renderer.cpp
         m1k_camera.cpp
         simple_render_system.cpp
+        keyboard_movement_controller.cpp
         )
 
 if (WIN32)

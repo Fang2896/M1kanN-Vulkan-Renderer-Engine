@@ -5,6 +5,7 @@
 #include "m1k_application.hpp"
 #include "m1k_camera.hpp"
 #include "simple_render_system.hpp"
+#include "keyboard_movement_controller.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -15,9 +16,11 @@
 #include <stdexcept>
 #include <array>
 #include <iostream>
+#include <chrono>
 
 
 namespace m1k {
+#define MAX_FRAME_TIME 0.5f
 
 M1kApplication::M1kApplication() {
     loadGameObjects();
@@ -30,12 +33,24 @@ void M1kApplication::run() {
 
     std::cout << "max push constant size: " << m1k_device_.properties.limits.maxPushConstantsSize << "\n";
     M1kCamera camera{};
-    // camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f,0.0f,1.0f));
     camera.setViewTarget(glm::vec3(-1.0f, -2.0f, -2.5f), glm::vec3(0.0f,0.0f,2.5f));
 
+    auto viewer_object = M1kGameObject::createGameObject();  // no model, no renderer (camera object)
+    KeyboardMovementController camera_controller{};
 
+    auto current_time = std::chrono::high_resolution_clock::now();
     while(!m1k_window_.shouldClose()) {
-        glfwPollEvents();
+        glfwPollEvents();   // may block
+
+        auto new_time = std::chrono::high_resolution_clock::now();
+        float frame_time =
+            std::chrono::duration<float, std::chrono::seconds::period>(new_time - current_time).count();
+        current_time = new_time;
+
+        frame_time = glm::min(frame_time, MAX_FRAME_TIME);
+
+        camera_controller.moveInPlaneXZ(m1k_window_.getGLFWwindow(), frame_time, viewer_object);
+        camera.setViewYXZ(viewer_object.transform.translation, viewer_object.transform.rotation);
 
         float aspect = m1k_renderer_.getAspectRatio();
         // camera.setOrthographicProjection(-aspect,aspect,-1,1,-1,1);
