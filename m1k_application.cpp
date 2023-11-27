@@ -26,10 +26,13 @@ M1kApplication::M1kApplication() {
 M1kApplication::~M1kApplication() = default;
 
 void M1kApplication::run() {
+    SimpleRenderSystem simple_render_system{m1k_device_, m1k_renderer_.getSwapChainRenderPass()};
+
     std::cout << "max push constant size: " << m1k_device_.properties.limits.maxPushConstantsSize << "\n";
     M1kCamera camera{};
+    // camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f,0.0f,1.0f));
+    camera.setViewTarget(glm::vec3(-1.0f, -2.0f, -2.5f), glm::vec3(0.0f,0.0f,2.5f));
 
-    SimpleRenderSystem simple_render_system{m1k_device_, m1k_renderer_.getSwapChainRenderPass()};
 
     while(!m1k_window_.shouldClose()) {
         glfwPollEvents();
