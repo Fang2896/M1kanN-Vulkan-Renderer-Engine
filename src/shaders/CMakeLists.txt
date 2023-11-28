@@ -8,7 +8,7 @@ endif()
 message(STATUS "Successfully Found GLSLC: Dir: ${GLSLC_EXECUTABLE}")
 
 # 设置着色器源文件和编译目标文件
-set(SHADER_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/sources")
+set(SHADER_SOURCE_DIR "sources")
 set(SHADER_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/binaries")
 
 message(STATUS "Shader Source Directory: ${SHADER_SOURCE_DIR}")

@@ -10,35 +10,35 @@ find_package(Vulkan REQUIRED)
 include_directories(${Vulkan_INCLUDE_DIR})
 include_directories(${Vulkan_INCLUDE_DIR}/../Third-Party/Include)
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(include)
 if (WIN32)
-    include_directories(${PROJECT_SOURCE_DIR}/third_party/include)
+    include_directories(third_party/include)
 elseif (APPLE)
 
 endif()
 
 
-add_subdirectory(./shaders)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/shaders)
 
 
-add_executable(HelloVulkan include/m1k_model.hpp)
+add_executable(HelloVulkan)
 target_sources(HelloVulkan PRIVATE
-        main.cpp
-        m1k_window.cpp
-        m1k_device.cpp
-        m1k_pipeline.cpp
-        m1k_application.cpp
-        m1k_swap_chain.cpp
-        m1k_model.cpp
-        m1k_renderer.cpp
-        m1k_camera.cpp
-        simple_render_system.cpp
-        keyboard_movement_controller.cpp
+        src/main.cpp
+        src/m1k_window.cpp
+        src/m1k_device.cpp
+        src/m1k_pipeline.cpp
+        src/m1k_application.cpp
+        src/m1k_swap_chain.cpp
+        src/m1k_model.cpp
+        src/m1k_renderer.cpp
+        src/m1k_camera.cpp
+        src/simple_render_system.cpp
+        src/keyboard_movement_controller.cpp
         )
 
 if (WIN32)
     message(STATUS "==== Windows System ====")
-    set(GLFW_LIB_PATH ${PROJECT_SOURCE_DIR}/third_party/lib/glfw3/glfw3.lib)
+    set(GLFW_LIB_PATH ${CMAKE_SOURCE_DIR}/third_party/lib/glfw3/glfw3.lib)
     target_link_libraries(HelloVulkan
             ${Vulkan_LIBRARIES}
             ${GLFW_LIB_PATH})
