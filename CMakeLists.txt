@@ -18,7 +18,7 @@ elseif (APPLE)
 endif()
 
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/src/shaders)
+add_subdirectory(${CMAKE_SOURCE_DIR}/shaders)
 
 
 add_executable(HelloVulkan)
@@ -32,6 +32,7 @@ target_sources(HelloVulkan PRIVATE
         src/m1k_model.cpp
         src/m1k_renderer.cpp
         src/m1k_camera.cpp
+        src/m1k_game_object.cpp
         src/simple_render_system.cpp
         src/keyboard_movement_controller.cpp
         )

@@ -19,7 +19,7 @@ namespace m1k {
 
 struct SimplePushConstantData {
     glm::mat4 transform{1.0f};
-    alignas(16) glm::vec3 color;
+    glm::mat4 normal_matrix{1.0f};
 };
 
 SimpleRenderSystem::SimpleRenderSystem(M1kDevice &device, VkRenderPass render_pass)
@@ -75,12 +75,13 @@ void SimpleRenderSystem::renderGameObjects(
 
     m1k_pipeline_->bind(command_buffer);
 
-    auto projectionView = camera.getProjection() * camera.getView();
+    auto projection_view = camera.getProjection() * camera.getView();
 
     for(auto& obj : game_objects) {
         SimplePushConstantData push{};
-        push.color = obj.color;
-        push.transform = projectionView * obj.transform.mat4();
+        auto model_matrix = obj.transform.mat4();
+        push.transform = projection_view * model_matrix;
+        push.normal_matrix = obj.transform.normalMatrix();
 
         vkCmdPushConstants(command_buffer,
                            pipeline_layout_,

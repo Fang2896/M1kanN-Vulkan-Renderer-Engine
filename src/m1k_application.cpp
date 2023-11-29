@@ -67,12 +67,12 @@ void M1kApplication::run() {
 }
 
 void M1kApplication::loadGameObjects() {
-    std::shared_ptr<M1kModel> cube_model = M1kModel::createModelFromFile(m1k_device_, "../resources/models/smooth_vase.obj");
+    std::shared_ptr<M1kModel> cube_model = M1kModel::createModelFromFile(m1k_device_, "../resources/models/flat_vase.obj");
 
     auto cube = M1kGameObject::createGameObject();
     cube.model = cube_model;
-    cube.transform.translation = {0.0f, 0.0f, 2.5f};
-    cube.transform.scale = {0.5f, 0.5f, 0.5f};
+    cube.transform.translation = {0.0f, 0.5f, 2.5f};
+    cube.transform.scale = glm::vec3(3.0f);
 
     game_objects_.push_back(std::move(cube));
 }
