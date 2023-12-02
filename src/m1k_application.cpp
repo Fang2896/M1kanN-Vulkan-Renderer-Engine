@@ -24,15 +24,6 @@
 namespace m1k {
 #define MAX_FRAME_TIME 0.5f
 
-// automatically align in Vulkan
-struct GlobalUbo {
-    glm::mat4 projection_matrix{1.0f};
-    glm::mat4 view_matrix{1.0f};
-    glm::vec4 ambient_light_color{1.0f, 1.0f, 1.0f, 0.02f};
-    glm::vec3 light_position{-1.0f};
-    alignas(16) glm::vec4 light_color{1.0f};    // w is the light intensity
-};
-
 
 M1kApplication::M1kApplication() {
     global_pool_ =
@@ -119,6 +110,10 @@ void M1kApplication::run() {
             GlobalUbo ubo{};
             ubo.projection_matrix = camera.getProjection();
             ubo.view_matrix = camera.getView();
+            ubo.inverse_view_matrix = camera.getViewInverse();
+
+            point_light_system.update(frame_info, ubo);
+
             ubo_buffers[frame_index]->writeToBuffer(&ubo);
             ubo_buffers[frame_index]->flush();
 
@@ -176,6 +171,27 @@ void M1kApplication::loadGameObjects() {
     light_object.transform.translation = {0.0f, 0.5f, 0.0f};
     light_object.transform.scale = glm::vec3(3.0f, 1.0f, 3.0f);
     game_objects_.emplace(light_object.getId() ,std::move(light_object));
+
+    std::vector<glm::vec3> point_light_colors{
+        {1.f, .1f, .1f},
+        {.1f, .1f, 1.f},
+        {.1f, 1.f, .1f},
+        {1.f, 1.f, .1f},
+        {.1f, 1.f, 1.f},
+        {1.f, 1.f, 1.f}  //
+    };
+
+    for (int i = 0; i < point_light_colors.size(); ++i) {
+        auto point_light = M1kGameObject::makePointLight(0.2f);
+        point_light.color = point_light_colors[i];
+        auto rotate_light = glm::rotate(
+            glm::mat4(1.0f),
+            (i * glm::two_pi<float>()) / point_light_colors.size(),
+            {0.f, -1.f, 0.f});
+
+        point_light.transform.translation = glm::vec3(rotate_light * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+        game_objects_.emplace(point_light.getId(), std::move(point_light));
+    }
 }
 
 

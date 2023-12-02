@@ -14,14 +14,19 @@ layout (push_constant) uniform Push {
     mat4 normal_matrix;
 }push;
 
+struct PointLight{
+    vec4 position;  // ignore w
+    vec4 color; // w is intensity
+};
+
 layout (set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection_matrix;
     mat4 view_matrix;
+    mat4 inverse_view_matrix;
     vec4 ambient_light_color;
-    vec3 light_position;
-    vec4 light_color;
+    PointLight point_lights[10];    // can apply Specialization Constants
+    int num_lights;
 } ubo;
-
 
 void main() {
     vec4 position_world = push.model_matrix * vec4(position, 1.0f);

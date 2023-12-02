@@ -28,6 +28,10 @@ struct TransformComponent {
 
 };
 
+struct PointLightComponent {
+    float light_intensity = 1.0f;
+};
+
 class M1kGameObject {
    public:
     using id_t = unsigned int;
@@ -38,6 +42,10 @@ class M1kGameObject {
         return M1kGameObject{currentId++};
     }
 
+    static M1kGameObject makePointLight(float intensity = 10.f,
+                                        float radius = 0.1f,
+                                        glm::vec3 color = glm::vec3(1.f));
+
     M1kGameObject(const M1kGameObject&) = delete;
     M1kGameObject &operator=(const M1kGameObject&) = delete;
     M1kGameObject(M1kGameObject &&) = default;
@@ -45,9 +53,12 @@ class M1kGameObject {
 
     id_t getId() { return id; }
 
-    std::shared_ptr<M1kModel> model{};
     glm::vec3 color{};
     TransformComponent transform{};
+
+    // optional pointer components
+    std::shared_ptr<M1kModel> model{};
+    std::unique_ptr<PointLightComponent> point_light = nullptr;
 
    private:
     M1kGameObject(id_t objectId) : id(objectId) {}
