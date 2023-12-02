@@ -37,7 +37,7 @@ class M1kApplication {
     M1kRenderer m1k_renderer_{m1k_window_, m1k_device_};
 
     std::unique_ptr<M1kDescriptorPool> global_pool_{};
-    std::vector<M1kGameObject> game_objects_;
+    M1kGameObject::Map game_objects_;
 };
 
 }

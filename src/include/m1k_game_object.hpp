@@ -11,6 +11,9 @@
 
 // std
 #include <memory>
+#include <unordered_map>
+
+// might be re-implemented by ECS strategy
 
 namespace m1k {
 
@@ -28,6 +31,7 @@ struct TransformComponent {
 class M1kGameObject {
    public:
     using id_t = unsigned int;
+    using Map = std::unordered_map<id_t, M1kGameObject>;
 
     static M1kGameObject createGameObject() {
         static id_t currentId = 0;

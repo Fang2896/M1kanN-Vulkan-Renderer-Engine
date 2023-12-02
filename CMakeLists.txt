@@ -10,7 +10,7 @@ find_package(Vulkan REQUIRED)
 include_directories(${Vulkan_INCLUDE_DIR})
 include_directories(${Vulkan_INCLUDE_DIR}/../Third-Party/Include)
 
-include_directories(include)
+include_directories(src/include)
 if (WIN32)
     include_directories(third_party/include)
 elseif (APPLE)
@@ -35,7 +35,8 @@ target_sources(HelloVulkan PRIVATE
         src/m1k_game_object.cpp
         src/m1k_buffer.cpp
         src/m1k_descriptor.cpp
-        src/simple_render_system.cpp
+        src/systems/point_light_system.cpp
+        src/systems/simple_render_system.cpp
         src/keyboard_movement_controller.cpp
         )
 

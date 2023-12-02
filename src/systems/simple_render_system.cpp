@@ -2,7 +2,7 @@
 // Created by fangl on 2023/11/26.
 //
 
-#include "simple_render_system.hpp"
+#include "systems/simple_render_system.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -70,9 +70,7 @@ void SimpleRenderSystem::createPipeline(VkRenderPass render_pass) {
         "./shaders/binaries/simple_shader.frag.spv");
 }
 
-void SimpleRenderSystem::renderGameObjects(
-    FrameInfo &frame_info,
-    std::vector<M1kGameObject> &game_objects) {
+void SimpleRenderSystem::renderGameObjects(FrameInfo &frame_info) {
 
     m1k_pipeline_->bind(frame_info.command_buffer);
 
@@ -84,7 +82,12 @@ void SimpleRenderSystem::renderGameObjects(
         &frame_info.global_descriptor_set,
         0, nullptr);
 
-    for(auto& obj : game_objects) {
+    for(auto& kv : frame_info.game_objects) {
+        auto &obj = kv.second;
+
+        // filter
+        if(obj.model == nullptr) continue;
+
         SimplePushConstantData push{};
         push.model_matrix = obj.transform.mat4();
         push.normal_matrix = obj.transform.normalMatrix();

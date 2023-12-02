@@ -19,6 +19,9 @@ struct PipelineConfigInfo {
     PipelineConfigInfo(const PipelineConfigInfo&) = delete;
     PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
+    std::vector<VkVertexInputBindingDescription> binding_descriptions{};
+    std::vector<VkVertexInputAttributeDescription> attribute_descriptions{};
+
     VkPipelineViewportStateCreateInfo viewport_info;
     VkPipelineInputAssemblyStateCreateInfo input_assembly_info;
     VkPipelineRasterizationStateCreateInfo rasterization_info;
@@ -62,7 +65,7 @@ class M1kPipeline {
 
     void createShaderModule(const std::vector<char>& code, VkShaderModule* shader_module);
 
-    M1kDevice & m1k_device_;
+    M1kDevice &m1k_device_;
     VkPipeline graphics_pipeline_;
     VkShaderModule vert_shader_module_;
     VkShaderModule frag_shader_module_;
