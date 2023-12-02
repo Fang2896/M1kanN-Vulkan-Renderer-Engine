@@ -706,9 +706,9 @@ extern "C" {
  *  @analysis Application programmer error.  Fix the offending call.
  */
 #define GLFW_INVALID_VALUE          0x00010004
-/*! @brief A memory allocation failed.
+/*! @brief A memory_ allocation failed.
  *
- *  A memory allocation failed.
+ *  A memory_ allocation failed.
  *
  *  @analysis A bug in GLFW or the underlying operating system.  Report the bug
  *  to our [issue tracker](https://github.com/glfw/glfw/issues).
@@ -910,9 +910,9 @@ extern "C" {
  *  Framebuffer bit depth [hint](@ref GLFW_ACCUM_ALPHA_BITS).
  */
 #define GLFW_ACCUM_ALPHA_BITS       0x0002100A
-/*! @brief Framebuffer auxiliary buffer hint.
+/*! @brief Framebuffer auxiliary buffer_ hint.
  *
- *  Framebuffer auxiliary buffer [hint](@ref GLFW_AUX_BUFFERS).
+ *  Framebuffer auxiliary buffer_ [hint](@ref GLFW_AUX_BUFFERS).
  */
 #define GLFW_AUX_BUFFERS            0x0002100B
 /*! @brief OpenGL stereoscopic rendering hint.
@@ -2658,7 +2658,7 @@ GLFWAPI void glfwWindowHintString(int hint, const char* value);
  *  creation.
  *
  *  @remark @x11 The class part of the `WM_CLASS` window_ property will by
- *  default be set to the window_ title passed to this function.  The instance
+ *  default be set to the window_ title passed to this function.  The instance_
  *  part will use the contents of the `RESOURCE_NAME` environment variable, if
  *  present and not empty, or fall back to the window_ title.  Set the
  *  [GLFW_X11_CLASS_NAME](@ref GLFW_X11_CLASS_NAME_hint) and
@@ -2670,7 +2670,7 @@ GLFWAPI void glfwWindowHintString(int hint, const char* value);
  *  supported, or if the compositor prefers client-side decorations, a very
  *  simple fallback frame will be drawn using the wp_viewporter protocol.  A
  *  compositor can still emit close, maximize or fullscreen events, using for
- *  instance a keybind mechanism.  If neither of these protocols is supported,
+ *  instance_ a keybind mechanism.  If neither of these protocols is supported,
  *  the window_ won't be decorated.
  *
  *  @remark @wayland A full screen window_ will not attempt to change the mode,
@@ -4772,7 +4772,7 @@ GLFWAPI GLFWcursorenterfun glfwSetCursorEnterCallback(GLFWwindow* window, GLFWcu
 /*! @brief Sets the scroll callback.
  *
  *  This function sets the scroll callback of the specified window_, which is
- *  called when a scrolling device is used, such as a mouse wheel or scrolling
+ *  called when a scrolling device_ is used, such as a mouse wheel or scrolling
  *  area of a touchpad.
  *
  *  The scroll callback receives all scrolling input, like that from a mouse
@@ -5667,10 +5667,10 @@ GLFWAPI GLFWglproc glfwGetProcAddress(const char* procname);
  *  ICD have been found.
  *
  *  The availability of a Vulkan loader and even an ICD does not by itself guarantee that
- *  surface creation or even instance creation is possible.  Call @ref
+ *  surface creation or even instance_ creation is possible.  Call @ref
  *  glfwGetRequiredInstanceExtensions to check whether the extensions necessary for Vulkan
  *  surface creation are available and @ref glfwGetPhysicalDevicePresentationSupport to
- *  check whether a queue family of a physical device supports image presentation.
+ *  check whether a queue family of a physical device_ supports image presentation.
  *
  *  @return `GLFW_TRUE` if Vulkan is minimally available, or `GLFW_FALSE`
  *  otherwise.
@@ -5687,9 +5687,9 @@ GLFWAPI GLFWglproc glfwGetProcAddress(const char* procname);
  */
 GLFWAPI int glfwVulkanSupported(void);
 
-/*! @brief Returns the Vulkan instance extensions required by GLFW.
+/*! @brief Returns the Vulkan instance_ extensions required by GLFW.
  *
- *  This function returns an array of names of Vulkan instance extensions required
+ *  This function returns an array of names of Vulkan instance_ extensions required
  *  by GLFW for creating Vulkan surfaces for GLFW windows.  If successful, the
  *  list will always contain `VK_KHR_surface`, so if you don't require any
  *  additional extensions you can pass this list directly to the
@@ -5733,10 +5733,10 @@ GLFWAPI const char** glfwGetRequiredInstanceExtensions(uint32_t* count);
 
 #if defined(VK_VERSION_1_0)
 
-/*! @brief Returns the address of the specified Vulkan instance function.
+/*! @brief Returns the address of the specified Vulkan instance_ function.
  *
  *  This function returns the address of the specified Vulkan core or extension
- *  function for the specified instance.  If instance is set to `NULL` it can
+ *  function for the specified instance_.  If instance_ is set to `NULL` it can
  *  return any function exported from the Vulkan loader, including at least the
  *  following functions:
  *
@@ -5752,8 +5752,8 @@ GLFWAPI const char** glfwGetRequiredInstanceExtensions(uint32_t* count);
  *  This function is equivalent to calling `vkGetInstanceProcAddr` with
  *  a platform-specific query of the Vulkan loader as a fallback.
  *
- *  @param[in] instance The Vulkan instance to query, or `NULL` to retrieve
- *  functions related to instance creation.
+ *  @param[in] instance The Vulkan instance_ to query, or `NULL` to retrieve
+ *  functions related to instance_ creation.
  *  @param[in] procname The ASCII encoded name of the function.
  *  @return The address of the function, or `NULL` if an
  *  [error](@ref error_handling) occurred.
@@ -5777,18 +5777,18 @@ GLFWAPI GLFWvkproc glfwGetInstanceProcAddress(VkInstance instance, const char* p
 /*! @brief Returns whether the specified queue family can present images.
  *
  *  This function returns whether the specified queue family of the specified
- *  physical device supports presentation to the platform GLFW was built for.
+ *  physical device_ supports presentation to the platform GLFW was built for.
  *
- *  If Vulkan or the required window_ surface creation instance extensions are
- *  not available on the machine, or if the specified instance was not created
+ *  If Vulkan or the required window_ surface creation instance_ extensions are
+ *  not available on the machine, or if the specified instance_ was not created
  *  with the required extensions, this function returns `GLFW_FALSE` and
  *  generates a @ref GLFW_API_UNAVAILABLE error.  Call @ref glfwVulkanSupported
  *  to check whether Vulkan is at least minimally available and @ref
- *  glfwGetRequiredInstanceExtensions to check what instance extensions are
+ *  glfwGetRequiredInstanceExtensions to check what instance_ extensions are
  *  required.
  *
- *  @param[in] instance The instance that the physical device belongs to.
- *  @param[in] device The physical device that the queue family belongs to.
+ *  @param[in] instance The instance_ that the physical device_ belongs to.
+ *  @param[in] device The physical device_ that the queue family belongs to.
  *  @param[in] queuefamily The index of the queue family to query.
  *  @return `GLFW_TRUE` if the queue family supports presentation, or
  *  `GLFW_FALSE` otherwise.
@@ -5820,11 +5820,11 @@ GLFWAPI int glfwGetPhysicalDevicePresentationSupport(VkInstance instance, VkPhys
  *  GLFW_API_UNAVAILABLE error.  Call @ref glfwVulkanSupported to check whether
  *  Vulkan is at least minimally available.
  *
- *  If the required window_ surface creation instance extensions are not
- *  available or if the specified instance was not created with these extensions
+ *  If the required window_ surface creation instance_ extensions are not
+ *  available or if the specified instance_ was not created with these extensions
  *  enabled, this function returns `VK_ERROR_EXTENSION_NOT_PRESENT` and
  *  generates a @ref GLFW_API_UNAVAILABLE error.  Call @ref
- *  glfwGetRequiredInstanceExtensions to check what instance extensions are
+ *  glfwGetRequiredInstanceExtensions to check what instance_ extensions are
  *  required.
  *
  *  The window_ surface cannot be shared with another API so the window_ must
@@ -5832,12 +5832,12 @@ GLFWAPI int glfwGetPhysicalDevicePresentationSupport(VkInstance instance, VkPhys
  *  set to `GLFW_NO_API` otherwise it generates a @ref GLFW_INVALID_VALUE error
  *  and returns `VK_ERROR_NATIVE_WINDOW_IN_USE_KHR`.
  *
- *  The window_ surface must be destroyed before the specified Vulkan instance.
+ *  The window_ surface must be destroyed before the specified Vulkan instance_.
  *  It is the responsibility of the caller to destroy the window_ surface.  GLFW
  *  does not destroy it for you.  Call `vkDestroySurfaceKHR` to destroy the
  *  surface.
  *
- *  @param[in] instance The Vulkan instance to create the surface in.
+ *  @param[in] instance The Vulkan instance_ to create the surface in.
  *  @param[in] window_ The window_ to create the surface for.
  *  @param[in] allocator The allocator to use, or `NULL` to use the default
  *  allocator.
@@ -5859,7 +5859,7 @@ GLFWAPI int glfwGetPhysicalDevicePresentationSupport(VkInstance instance, VkPhys
  *  extension, if any, is included in the array returned by @ref
  *  glfwGetRequiredInstanceExtensions.
  *
- *  @remark @macos This function creates and sets a `CAMetalLayer` instance for
+ *  @remark @macos This function creates and sets a `CAMetalLayer` instance_ for
  *  the window_ content view, which is required for MoltenVK to function.
  *
  *  @thread_safety This function may be called from any thread.  For

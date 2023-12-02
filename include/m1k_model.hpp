@@ -5,6 +5,7 @@
 #pragma once
 
 #include "m1k_device.hpp"
+#include "m1k_buffer.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -61,13 +62,11 @@ class M1kModel {
 
     M1kDevice& m1K_device_;
 
-    VkBuffer vertex_buffer_;
-    VkDeviceMemory vertex_buffer_memory_;
+    std::unique_ptr<M1kBuffer> vertex_buffer_;
     uint32_t vertex_count_;
 
     bool has_index_buffer_{false};
-    VkBuffer index_buffer_;
-    VkDeviceMemory index_buffer_memory_;
+    std::unique_ptr<M1kBuffer> index_buffer_;
     uint32_t index_count_;
 };
 

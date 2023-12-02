@@ -23,12 +23,12 @@ class M1kCamera {
     void setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up = glm::vec3{0.0f, -1.0f, 0.0f});
     void setViewYXZ(glm::vec3 position, glm::vec3 rotation);
 
-    const glm::mat4& getProjection() const { return projection_matrix; }
-    const glm::mat4& getView() const { return view_matrix; }
+    const glm::mat4& getProjection() const { return projection_matrix_; }
+    const glm::mat4& getView() const { return view_matrix_; }
 
    private:
-    glm::mat4 projection_matrix{1.0f};
-    glm::mat4 view_matrix{1.0f};
+    glm::mat4 projection_matrix_{1.0f};
+    glm::mat4 view_matrix_{1.0f};
 
 };
 

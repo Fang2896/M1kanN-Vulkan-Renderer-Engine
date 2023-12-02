@@ -44,15 +44,15 @@ class M1kDevice {
     M1kDevice(M1kDevice &&) = delete;
     M1kDevice &operator=(M1kDevice &&) = delete;
 
-    VkCommandPool getCommandPool() { return commandPool; }
+    VkCommandPool getCommandPool() { return command_pool_; }
     VkDevice device() { return device_; }
     VkSurfaceKHR surface() { return surface_; }
     VkQueue graphicsQueue() { return graphicsQueue_; }
     VkQueue presentQueue() { return presentQueue_; }
 
-    SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physicalDevice); }
+    SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physical_device_); }
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-    QueueFamilyIndices findPhysicalQueueFamilies() { return findQueueFamilies(physicalDevice); }
+    QueueFamilyIndices findPhysicalQueueFamilies() { return findQueueFamilies(physical_device_); }
     VkFormat findSupportedFormat(
         const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
@@ -95,19 +95,19 @@ class M1kDevice {
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 
-    VkInstance instance;
-    VkDebugUtilsMessengerEXT debugMessenger;
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    M1kWindow &window;
-    VkCommandPool commandPool;
+    VkInstance instance_;
+    VkDebugUtilsMessengerEXT debug_messenger_;
+    VkPhysicalDevice physical_device_ = VK_NULL_HANDLE;
+    M1kWindow &window_;
+    VkCommandPool command_pool_;
 
     VkDevice device_;
     VkSurfaceKHR surface_;
     VkQueue graphicsQueue_;
     VkQueue presentQueue_;
 
-    const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-    const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    const std::vector<const char *> validation_layers_ = {"VK_LAYER_KHRONOS_validation"};
+    const std::vector<const char *> device_extensions_ = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 };
 
 }

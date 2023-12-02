@@ -33,6 +33,8 @@ target_sources(HelloVulkan PRIVATE
         src/m1k_renderer.cpp
         src/m1k_camera.cpp
         src/m1k_game_object.cpp
+        src/m1k_buffer.cpp
+        src/m1k_descriptor.cpp
         src/simple_render_system.cpp
         src/keyboard_movement_controller.cpp
         )

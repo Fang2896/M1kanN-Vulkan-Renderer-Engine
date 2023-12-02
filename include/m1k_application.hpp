@@ -8,6 +8,7 @@
 #include "m1k_device.hpp"
 #include "m1k_game_object.hpp"
 #include "m1k_renderer.hpp"
+#include "m1k_descriptor.hpp"
 
 // std
 #include <memory>
@@ -35,6 +36,7 @@ class M1kApplication {
     M1kDevice m1k_device_{m1k_window_};
     M1kRenderer m1k_renderer_{m1k_window_, m1k_device_};
 
+    std::unique_ptr<M1kDescriptorPool> global_pool_{};
     std::vector<M1kGameObject> game_objects_;
 };
 

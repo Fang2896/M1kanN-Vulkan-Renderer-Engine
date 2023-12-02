@@ -514,7 +514,7 @@ struct ObjReaderConfig {
   /// Parse vertex color.
   /// If vertex color is not present, its filled with default value.
   /// false = no vertex color
-  /// This will increase memory of parsed .obj
+  /// This will increase memory_ of parsed .obj
   bool vertex_color;
 
   ///
@@ -864,7 +864,7 @@ static inline int parseInt(const char **token) {
 // Tries to parse a floating point number located at s.
 //
 // s_end should be a location in the string where reading should absolutely
-// stop. For example at the end of the string, to prevent buffer overflows.
+// stop. For example at the end of the string, to prevent buffer_ overflows.
 //
 // Parses the following EBNF grammar:
 //   sign    = "+" | "-" ;

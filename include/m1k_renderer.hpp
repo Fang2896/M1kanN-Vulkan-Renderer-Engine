@@ -30,7 +30,7 @@ class M1kRenderer {
     bool isFrameInProgress() const { return is_frame_started; }
 
     VkCommandBuffer getCurrentCommandBuffer() const {
-        assert(is_frame_started && "Cannot get command buffer when frame not in progress");
+        assert(is_frame_started && "Cannot get command buffer_ when frame not in progress");
         return command_buffers_[current_frame_index];
     }
 

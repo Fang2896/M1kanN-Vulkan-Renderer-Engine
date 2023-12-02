@@ -8,6 +8,7 @@
 #include "m1k_pipeline.hpp"
 #include "m1k_game_object.hpp"
 #include "m1k_camera.hpp"
+#include "m1k_frame_info.hpp"
 
 // std
 #include <memory>
@@ -16,7 +17,7 @@ namespace m1k {
 
 class SimpleRenderSystem {
    public:
-    SimpleRenderSystem(M1kDevice &device, VkRenderPass render_pass);
+    SimpleRenderSystem(M1kDevice &device, VkRenderPass render_pass, VkDescriptorSetLayout global_set_layout);
     ~SimpleRenderSystem();
 
     // copy version delete
@@ -24,12 +25,11 @@ class SimpleRenderSystem {
     SimpleRenderSystem &operator=(const SimpleRenderSystem&) = delete;
 
     void renderGameObjects(
-        VkCommandBuffer command_buffer,
-        std::vector<M1kGameObject> &game_objects,
-        const M1kCamera &camera);
+        FrameInfo &frame_info,
+        std::vector<M1kGameObject> &game_objects);
 
    private:
-    void createPipelineLayout();
+    void createPipelineLayout(VkDescriptorSetLayout global_set_layout);
     void createPipeline(VkRenderPass render_pass);
 
     M1kDevice &m1k_device_;

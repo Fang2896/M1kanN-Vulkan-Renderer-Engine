@@ -27,17 +27,17 @@ class M1kSwapChain {
     M1kSwapChain(const  M1kSwapChain &) = delete;
     M1kSwapChain operator=(const  M1kSwapChain &) = delete;
 
-    VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
-    VkRenderPass getRenderPass() { return renderPass; }
-    VkImageView getImageView(int index) { return swapChainImageViews[index]; }
-    size_t imageCount() { return swapChainImages.size(); }
-    VkFormat getSwapChainImageFormat() { return swapChainImageFormat; }
-    VkExtent2D getSwapChainExtent() { return swapChainExtent; }
-    uint32_t width() { return swapChainExtent.width; }
-    uint32_t height() { return swapChainExtent.height; }
+    VkFramebuffer getFrameBuffer(int index) { return swap_chain_framebuffers_[index]; }
+    VkRenderPass getRenderPass() { return render_pass_; }
+    VkImageView getImageView(int index) { return swap_chain_image_views_[index]; }
+    size_t imageCount() { return swap_chain_images_.size(); }
+    VkFormat getSwapChainImageFormat() { return swap_chain_image_format_; }
+    VkExtent2D getSwapChainExtent() { return swap_chain_extent_; }
+    uint32_t width() { return swap_chain_extent_.width; }
+    uint32_t height() { return swap_chain_extent_.height; }
 
     float extentAspectRatio() {
-        return static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height);
+        return static_cast<float>(swap_chain_extent_.width) / static_cast<float>(swap_chain_extent_.height);
     }
     VkFormat findDepthFormat();
 
@@ -45,8 +45,8 @@ class M1kSwapChain {
     VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
     bool compareSwapFormat(const M1kSwapChain &swap_chain) const {
-        return swap_chain.swapChainDepthFormat == swapChainDepthFormat &&
-                swap_chain.swapChainImageFormat == swapChainImageFormat;
+        return swap_chain.swap_chain_depth_format_ == swap_chain_depth_format_ &&
+                swap_chain.swap_chain_image_format_ == swap_chain_image_format_;
     }
 
    private:
@@ -65,30 +65,30 @@ class M1kSwapChain {
         const std::vector<VkPresentModeKHR> &availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
-    VkFormat swapChainImageFormat;
-    VkFormat swapChainDepthFormat;
-    VkExtent2D swapChainExtent;
+    VkFormat swap_chain_image_format_;
+    VkFormat swap_chain_depth_format_;
+    VkExtent2D swap_chain_extent_;
 
-    std::vector<VkFramebuffer> swapChainFramebuffers;
-    VkRenderPass renderPass;
+    std::vector<VkFramebuffer> swap_chain_framebuffers_;
+    VkRenderPass render_pass_;
 
-    std::vector<VkImage> depthImages;
-    std::vector<VkDeviceMemory> depthImageMemorys;
-    std::vector<VkImageView> depthImageViews;
-    std::vector<VkImage> swapChainImages;
-    std::vector<VkImageView> swapChainImageViews;
+    std::vector<VkImage> depth_images_;
+    std::vector<VkDeviceMemory> depth_image_memorys_;
+    std::vector<VkImageView> depth_image_views;
+    std::vector<VkImage> swap_chain_images_;
+    std::vector<VkImageView> swap_chain_image_views_;
 
-    M1kDevice &device;
-    VkExtent2D windowExtent;
+    M1kDevice &device_;
+    VkExtent2D window_extent_;
 
-    VkSwapchainKHR swapChain;
-    std::shared_ptr<M1kSwapChain> oldSwapChain;
+    VkSwapchainKHR swap_chain_;
+    std::shared_ptr<M1kSwapChain> old_swap_chain_;
 
-    std::vector<VkSemaphore> imageAvailableSemaphores;
-    std::vector<VkSemaphore> renderFinishedSemaphores;
-    std::vector<VkFence> inFlightFences;
-    std::vector<VkFence> imagesInFlight;
-    size_t currentFrame = 0;
+    std::vector<VkSemaphore> image_available_semaphores_;
+    std::vector<VkSemaphore> render_finished_semaphores_;
+    std::vector<VkFence> in_flight_fences_;
+    std::vector<VkFence> images_in_flight_;
+    size_t current_frame_ = 0;
 };
 
 }  // namespace m1k

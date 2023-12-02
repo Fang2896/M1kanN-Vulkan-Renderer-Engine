@@ -90,7 +90,7 @@ VkCommandBuffer M1kRenderer::beginFrame() {
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
     if(vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
-        throw std::runtime_error("failed to begin recording command buffer");
+        throw std::runtime_error("failed to begin recording command buffer_");
     }
 
     return command_buffer;
@@ -101,7 +101,7 @@ void M1kRenderer::endFrame() {
     auto command_buffer = getCurrentCommandBuffer();
 
     if(vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to record command buffer");
+        throw std::runtime_error("failed to record command buffer_");
     }
 
     auto result = m1k_swap_chain_->submitCommandBuffers(&command_buffer, &current_image_index);
@@ -121,7 +121,7 @@ void M1kRenderer::beginSwapChainRenderPass(VkCommandBuffer command_buffer) {
     assert(is_frame_started && "Cannot call beginSwapChainRenderPass if frame is not in progress");
     assert(
         command_buffer == getCurrentCommandBuffer() &&
-        "Cannot begin render pass on command buffer from a different frame");
+        "Cannot begin render pass on command buffer_ from a different frame");
 
     VkRenderPassBeginInfo render_pass_info{};
     render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -156,7 +156,7 @@ void M1kRenderer::endSwapChainRenderPass(VkCommandBuffer command_buffer) {
     assert(is_frame_started && "Cannot call endSwapChainRenderPass if frame is not in progress");
     assert(
         command_buffer == getCurrentCommandBuffer() &&
-        "Cannot end render pass on command buffer from a different frame");
+        "Cannot end render pass on command buffer_ from a different frame");
 
     vkCmdEndRenderPass(command_buffer);
 }
