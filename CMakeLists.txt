@@ -12,9 +12,12 @@ include_directories(${Vulkan_INCLUDE_DIR}/../Third-Party/Include)
 
 include_directories(src/include)
 if (WIN32)
-    include_directories(third_party/include)
+    include_directories(third_party/include/GLFW)
+    include_directories(third_party/include/obj_loader)
+    include_directories(third_party/include/stb)
 elseif (APPLE)
-
+    include_directories(third_party/include/obj_loader)
+    include_directories(third_party/include/stb)
 endif()
 
 
