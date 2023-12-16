@@ -40,11 +40,12 @@ M1kBuffer::M1kBuffer(
     VkBufferUsageFlags usage_flags,
     VkMemoryPropertyFlags memory_property_flags,
     VkDeviceSize min_offset_alignment)
-    : m1k_device_{device},
-      instance_size_{instance_size},
-      instance_count_{instance_count},
-      usage_flags_{usage_flags},
-      memory_property_flags_{memory_property_flags} {
+        : m1k_device_{device},
+          instance_size_{instance_size},
+          instance_count_{instance_count},
+          usage_flags_{usage_flags},
+          memory_property_flags_{memory_property_flags} {
+
     alignment_size_ = getAlignment(instance_size, min_offset_alignment);
     buffer_size_ = alignment_size_ * instance_count;
     device.createBuffer(buffer_size_, usage_flags, memory_property_flags, buffer_, memory_);

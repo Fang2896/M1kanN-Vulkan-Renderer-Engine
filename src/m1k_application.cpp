@@ -22,6 +22,7 @@
 
 
 namespace m1k {
+
 #define MAX_FRAME_TIME 0.5f
 
 
@@ -148,7 +149,7 @@ void M1kApplication::run() {
 }
 
 void M1kApplication::loadGameObjects() {
-    // objects:
+    // vase objects:
     std::shared_ptr<M1kModel> flat_vase_model = M1kModel::createModelFromFile(m1k_device_, "../resources/models/flat_vase.obj");
     std::shared_ptr<M1kModel> smooth_vase_model = M1kModel::createModelFromFile(m1k_device_, "../resources/models/smooth_vase.obj");
 
@@ -164,14 +165,15 @@ void M1kApplication::loadGameObjects() {
     smooth_vase.transform.scale = {3.f, 1.5f, 3.f};
     game_objects_.emplace(smooth_vase.getId(), std::move(smooth_vase));
 
-    // light objects:
-    std::shared_ptr<M1kModel> light_object_model = M1kModel::createModelFromFile(m1k_device_, "../resources/models/quad.obj");
-    auto light_object = M1kGameObject::createGameObject();
-    light_object.model = light_object_model;
-    light_object.transform.translation = {0.0f, 0.5f, 0.0f};
-    light_object.transform.scale = glm::vec3(3.0f, 1.0f, 3.0f);
-    game_objects_.emplace(light_object.getId() ,std::move(light_object));
+    // plane objects:
+    std::shared_ptr<M1kModel> plane_object_model = M1kModel::createModelFromFile(m1k_device_, "../resources/models/quad.obj");
+    auto plane_object = M1kGameObject::createGameObject();
+    plane_object.model = plane_object_model;
+    plane_object.transform.translation = {0.0f, 0.5f, 0.0f};
+    plane_object.transform.scale = glm::vec3(3.0f, 1.0f, 3.0f);
+    game_objects_.emplace(plane_object.getId() ,std::move(plane_object));
 
+    // point light
     std::vector<glm::vec3> point_light_colors{
         {1.f, .1f, .1f},
         {.1f, .1f, 1.f},
@@ -182,7 +184,7 @@ void M1kApplication::loadGameObjects() {
     };
 
     for (int i = 0; i < point_light_colors.size(); ++i) {
-        auto point_light = M1kGameObject::makePointLight(0.2f);
+        auto point_light = M1kGameObject::makePointLight(0.4f);
         point_light.color = point_light_colors[i];
         auto rotate_light = glm::rotate(
             glm::mat4(1.0f),

@@ -44,11 +44,16 @@ class M1kDevice {
     M1kDevice(M1kDevice &&) = delete;
     M1kDevice &operator=(M1kDevice &&) = delete;
 
+    // only for imgui, to be optimized
+    VkInstance getVkInstance() const { return instance_; }
+    VkPhysicalDevice getPhyDevice() const { return physical_device_; };
+
     VkCommandPool getCommandPool() { return command_pool_; }
     VkDevice device() { return device_; }
     VkSurfaceKHR surface() { return surface_; }
     VkQueue graphicsQueue() { return graphicsQueue_; }
     VkQueue presentQueue() { return presentQueue_; }
+
 
     SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physical_device_); }
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -91,7 +96,7 @@ class M1kDevice {
     bool checkValidationLayerSupport();
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
-    void hasGflwRequiredInstanceExtensions();
+    void hasGlfwRequiredInstanceExtensions();
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 

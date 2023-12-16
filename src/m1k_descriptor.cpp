@@ -93,7 +93,8 @@ M1kDescriptorPool::M1kDescriptorPool(
     uint32_t max_sets,
     VkDescriptorPoolCreateFlags pool_flags,
     const std::vector<VkDescriptorPoolSize> &pool_sizes)
-    : m1k_device_{m1k_device} {
+        : m1k_device_{m1k_device} {
+
     VkDescriptorPoolCreateInfo descriptor_pool_info{};
     descriptor_pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     descriptor_pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());

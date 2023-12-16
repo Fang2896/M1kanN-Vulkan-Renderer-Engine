@@ -359,7 +359,7 @@ struct mesh_t {
   std::vector<int> material_ids;  // per-face material ID
   std::vector<unsigned int> smoothing_group_ids;  // per-face smoothing group
                                                   // ID(0 = off. positive value
-                                                  // = group id)
+                                                  // = group id_)
   std::vector<tag_t> tags;                        // SubD tag
 };
 
@@ -403,7 +403,7 @@ struct attrib_t {
   //
 
   // NOTE(syoyo): array index is based on the appearance order.
-  // To get a corresponding skin weight for a specific vertex id `vid`,
+  // To get a corresponding skin weight for a specific vertex id_ `vid`,
   // Need to reconstruct a look up table: `skin_weight_t::vertex_id` == `vid`
   // (e.g. using std::map, std::unordered_map)
   std::vector<skin_weight_t> skin_weights;
@@ -702,7 +702,7 @@ struct vertex_index_t {
 // index + smoothing group.
 struct face_t {
   unsigned int
-      smoothing_group_id;  // smoothing group id. 0 = smoothing groupd is off.
+      smoothing_group_id;  // smoothing group id_. 0 = smoothing groupd is off.
   int pad_;
   std::vector<vertex_index_t> vertex_indices;  // face vertex indices.
 
@@ -2576,7 +2576,7 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
   std::map<std::string, int> material_map;
   int material = -1;
 
-  // smoothing group id
+  // smoothing group id_
   unsigned int current_smoothing_id =
       0;  // Initial value. 0 means no smoothing.
 
@@ -3026,7 +3026,7 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
     }
 
     if (token[0] == 's' && IS_SPACE(token[1])) {
-      // smoothing group id
+      // smoothing group id_
       token += 2;
 
       // skip space.
@@ -3056,7 +3056,7 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
       }
 
       continue;
-    }  // smoothing group id
+    }  // smoothing group id_
 
     // Ignore unknown command.
   }

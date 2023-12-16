@@ -191,6 +191,7 @@ void M1kModel::Builder::loadModel(const std::string &filepath) {
                 };
             }
 
+            // eliminate duplicates
             if(unique_vertices.count(vertex) == 0) {
                 unique_vertices[vertex] = static_cast<uint32_t>(vertices.size());
                 vertices.push_back(vertex);

@@ -50,7 +50,7 @@ void M1kSwapChain::init() {
     }
 
     for (int i = 0; i < depth_images_.size(); i++) {
-        vkDestroyImageView(device_.device(), depth_image_views[i], nullptr);
+        vkDestroyImageView(device_.device(), depth_image_views_[i], nullptr);
         vkDestroyImage(device_.device(), depth_images_[i], nullptr);
         vkFreeMemory(device_.device(), depth_image_memorys_[i], nullptr);
     }
@@ -282,7 +282,7 @@ void  M1kSwapChain::createRenderPass() {
 void  M1kSwapChain::createFramebuffers() {
     swap_chain_framebuffers_.resize(imageCount());
     for (size_t i = 0; i < imageCount(); i++) {
-        std::array<VkImageView, 2> attachments = {swap_chain_image_views_[i], depth_image_views[i]};
+        std::array<VkImageView, 2> attachments = {swap_chain_image_views_[i], depth_image_views_[i]};
 
         VkExtent2D swapChainExtent = getSwapChainExtent();
         VkFramebufferCreateInfo framebufferInfo = {};
@@ -311,7 +311,7 @@ void  M1kSwapChain::createDepthResources() {
 
     depth_images_.resize(imageCount());
     depth_image_memorys_.resize(imageCount());
-    depth_image_views.resize(imageCount());
+    depth_image_views_.resize(imageCount());
 
     for (int i = 0; i < depth_images_.size(); i++) {
         VkImageCreateInfo imageInfo{};
@@ -347,7 +347,7 @@ void  M1kSwapChain::createDepthResources() {
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(device_.device(), &viewInfo, nullptr, &depth_image_views[i]) != VK_SUCCESS) {
+        if (vkCreateImageView(device_.device(), &viewInfo, nullptr, &depth_image_views_[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to create texture image view!");
         }
     }

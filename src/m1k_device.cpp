@@ -64,7 +64,7 @@ M1kDevice::M1kDevice(M1kWindow &window) : window_{window} {
     createSurface();
     // which device_ to use?
     pickPhysicalDevice();
-    // which device_ features to use?
+    // which device_ features to use?   contain graphic and present queue
     createLogicalDevice();
     // help with command buffer_ allocation or something else
     createCommandPool();
@@ -89,11 +89,11 @@ void M1kDevice::createInstance() {
 
     VkApplicationInfo appInfo = {};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "LittleVulkanEngine App";
+    appInfo.pApplicationName = "M1kanN Vulkan Engine App";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    appInfo.apiVersion = VK_API_VERSION_1_3;
 
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -124,7 +124,7 @@ void M1kDevice::createInstance() {
         throw std::runtime_error("failed to create instance_!");
     }
 
-    hasGflwRequiredInstanceExtensions();
+    hasGlfwRequiredInstanceExtensions();
 }
 
 void M1kDevice::pickPhysicalDevice() {
@@ -279,6 +279,7 @@ bool M1kDevice::checkValidationLayerSupport() {
     return true;
 }
 
+// get some instance-level extensions
 std::vector<const char *> M1kDevice::getRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
     const char **glfwExtensions;
@@ -298,7 +299,7 @@ std::vector<const char *> M1kDevice::getRequiredExtensions() {
     return extensions;
 }
 
-void M1kDevice::hasGflwRequiredInstanceExtensions() {
+void M1kDevice::hasGlfwRequiredInstanceExtensions() {
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
     std::vector<VkExtensionProperties> extensions(extensionCount);
@@ -433,6 +434,7 @@ void M1kDevice::createBuffer(
     VkMemoryPropertyFlags properties,
     VkBuffer &buffer,
     VkDeviceMemory &bufferMemory) {
+
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;

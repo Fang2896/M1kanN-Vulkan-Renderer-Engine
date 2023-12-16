@@ -27,16 +27,16 @@ class M1kRenderer {
 
     VkRenderPass getSwapChainRenderPass() const { return m1k_swap_chain_->getRenderPass(); }
     float getAspectRatio() const { return m1k_swap_chain_->extentAspectRatio(); }
-    bool isFrameInProgress() const { return is_frame_started; }
+    bool isFrameInProgress() const { return is_frame_started_; }
 
     VkCommandBuffer getCurrentCommandBuffer() const {
-        assert(is_frame_started && "Cannot get command buffer_ when frame not in progress");
-        return command_buffers_[current_frame_index];
+        assert(is_frame_started_ && "Cannot get command buffer_ when frame not in progress");
+        return command_buffers_[current_frame_index_];
     }
 
     int getFrameIndex() const {
-        assert(is_frame_started && "Cannot get frame index when frame not in progress");
-        return current_frame_index;
+        assert(is_frame_started_ && "Cannot get frame index when frame not in progress");
+        return current_frame_index_;
     }
 
     VkCommandBuffer beginFrame();
@@ -54,9 +54,9 @@ class M1kRenderer {
     std::unique_ptr<M1kSwapChain> m1k_swap_chain_;
     std::vector<VkCommandBuffer> command_buffers_;
 
-    uint32_t current_image_index;
-    int current_frame_index{0};
-    bool is_frame_started{false};
+    uint32_t current_image_index_;
+    int current_frame_index_{0};
+    bool is_frame_started_{false};
 };
 
 }

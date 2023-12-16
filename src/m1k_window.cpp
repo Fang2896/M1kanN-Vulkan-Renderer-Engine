@@ -22,7 +22,7 @@ M1kWindow::~M1kWindow() {
 
 void M1kWindow::framebufferResizeCallback(GLFWwindow *window, int width, int height) {
     auto m1k_window = reinterpret_cast<M1kWindow*>(glfwGetWindowUserPointer(window));
-    m1k_window->framebuffer_resized = true;
+    m1k_window->framebuffer_resized_ = true;
     m1k_window->width_ = width;
     m1k_window->height_ = height;
 }
@@ -38,8 +38,6 @@ void M1kWindow::initWindow() {
     glfwSetWindowUserPointer(window_, this);
     glfwSetFramebufferSizeCallback(window_, framebufferResizeCallback);
 }
-
-
 
 void M1kWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface) {
     if(glfwCreateWindowSurface(instance, window_, nullptr, surface) != VK_SUCCESS) {

@@ -66,8 +66,8 @@ void SimpleRenderSystem::createPipeline(VkRenderPass render_pass) {
     m1k_pipeline_ = std::make_unique<M1kPipeline>(
         m1k_device_,
         pipeline_config,
-        "./shaders/binaries/simple_shader.vert.spv",
-        "./shaders/binaries/simple_shader.frag.spv");
+        "./shaders/binaries/checkerboard_shader.vert.spv",
+        "./shaders/binaries/checkerboard_shader.frag.spv");
 }
 
 void SimpleRenderSystem::renderGameObjects(FrameInfo &frame_info) {

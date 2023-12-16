@@ -22,8 +22,8 @@ class M1kWindow {
 
     bool shouldClose() { return glfwWindowShouldClose(window_); }
     VkExtent2D getExtent() { return {static_cast<uint32_t>(width_), static_cast<uint32_t>(height_)}; }
-    bool wasWindowResized() { return framebuffer_resized; }
-    void resetWindowResizedFlag() { framebuffer_resized = false; }
+    bool wasWindowResized() { return framebuffer_resized_; }
+    void resetWindowResizedFlag() { framebuffer_resized_ = false; }
     GLFWwindow *getGLFWwindow() const { return window_; }
 
     void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
@@ -34,10 +34,13 @@ class M1kWindow {
 
     int width_;
     int height_;
-    bool framebuffer_resized = false;
+    bool framebuffer_resized_ = false;
 
     std::string window_name_;
     GLFWwindow * window_;
+
+    // imgui member variables
+
 };
 
 }

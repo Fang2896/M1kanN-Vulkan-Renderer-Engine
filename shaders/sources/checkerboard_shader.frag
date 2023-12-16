@@ -3,6 +3,7 @@
 layout (location = 0) in vec3 fragColor;
 layout (location = 1) in vec3 fragPosWorld;
 layout (location = 2) in vec3 fragNormalWorld;
+layout (location = 3) in vec2 fragUV;
 
 layout (location = 0) out vec4 outColor;
 
@@ -24,6 +25,12 @@ layout (set = 0, binding = 0) uniform GlobalUbo {
     PointLight point_lights[10];    // can apply Specialization Constants
     int num_lights;
 } ubo;
+
+
+vec3 checkerboardPattern(vec2 uv, vec3 color1, vec3 color2, float scale) {
+    float pattern = mod(floor(uv.x * scale) + floor(uv.y * scale), 2.0);
+    return mix(color1, color2, pattern);
+}
 
 
 void main() {
@@ -54,5 +61,8 @@ void main() {
         specular_light += intensity * binn_term;
     }
 
-    outColor = vec4((diffuse_light + specular_light) * fragColor, 1.0f);
+    vec3 checker_color = checkerboardPattern(fragUV, vec3(0.99), vec3(0.4), 10.0);
+    vec3 final_color = (diffuse_light + specular_light) * checker_color * fragColor;
+
+    outColor = vec4((diffuse_light + specular_light) * final_color, 1.0f);
 }

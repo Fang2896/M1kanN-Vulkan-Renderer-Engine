@@ -22,6 +22,7 @@ M1kRenderer::~M1kRenderer() {
     freeCommandBuffers();
 }
 
+// for window size change
 void M1kRenderer::recreateSwapChain() {
     auto extent = m1k_window_.getExtent();
     while(extent.width == 0 || extent.height == 0) {
@@ -70,9 +71,9 @@ void M1kRenderer::freeCommandBuffers() {
 }
 
 VkCommandBuffer M1kRenderer::beginFrame() {
-    assert(!is_frame_started && "Cannot call beginFrame while already in progress");
+    assert(!is_frame_started_ && "Cannot call beginFrame while already in progress");
 
-    auto result = m1k_swap_chain_->acquireNextImage(&current_image_index);
+    auto result = m1k_swap_chain_->acquireNextImage(&current_image_index_);
 
     if(result == VK_ERROR_OUT_OF_DATE_KHR) {
         recreateSwapChain();
@@ -83,7 +84,7 @@ VkCommandBuffer M1kRenderer::beginFrame() {
         throw std::runtime_error("failed to acquire swap chain image");
     }
 
-    is_frame_started = true;
+    is_frame_started_ = true;
 
     auto command_buffer = getCurrentCommandBuffer();
     VkCommandBufferBeginInfo begin_info{};
@@ -97,14 +98,14 @@ VkCommandBuffer M1kRenderer::beginFrame() {
 }
 
 void M1kRenderer::endFrame() {
-    assert(is_frame_started && "Cannot call endFrame while frame is not in progress");
+    assert(is_frame_started_ && "Cannot call endFrame while frame is not in progress");
     auto command_buffer = getCurrentCommandBuffer();
 
     if(vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer_");
     }
 
-    auto result = m1k_swap_chain_->submitCommandBuffers(&command_buffer, &current_image_index);
+    auto result = m1k_swap_chain_->submitCommandBuffers(&command_buffer, &current_image_index_);
 
     if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m1k_window_.wasWindowResized()) {
         m1k_window_.resetWindowResizedFlag();
@@ -113,12 +114,12 @@ void M1kRenderer::endFrame() {
         throw std::runtime_error("failed to present swap chain image");
     }
 
-    is_frame_started = false;
-    current_frame_index = (current_frame_index + 1) % M1kSwapChain::MAX_FRAMES_IN_FLIGHT;
+    is_frame_started_ = false;
+    current_frame_index_ = (current_frame_index_ + 1) % M1kSwapChain::MAX_FRAMES_IN_FLIGHT;
 }
 
 void M1kRenderer::beginSwapChainRenderPass(VkCommandBuffer command_buffer) {
-    assert(is_frame_started && "Cannot call beginSwapChainRenderPass if frame is not in progress");
+    assert(is_frame_started_ && "Cannot call beginSwapChainRenderPass if frame is not in progress");
     assert(
         command_buffer == getCurrentCommandBuffer() &&
         "Cannot begin render pass on command buffer_ from a different frame");
@@ -126,7 +127,7 @@ void M1kRenderer::beginSwapChainRenderPass(VkCommandBuffer command_buffer) {
     VkRenderPassBeginInfo render_pass_info{};
     render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     render_pass_info.renderPass = m1k_swap_chain_->getRenderPass();
-    render_pass_info.framebuffer = m1k_swap_chain_->getFrameBuffer(current_image_index);
+    render_pass_info.framebuffer = m1k_swap_chain_->getFrameBuffer(current_image_index_);
 
     render_pass_info.renderArea.offset = {0, 0};
     render_pass_info.renderArea.extent = m1k_swap_chain_->getSwapChainExtent();  // not windows extent
@@ -153,7 +154,7 @@ void M1kRenderer::beginSwapChainRenderPass(VkCommandBuffer command_buffer) {
 }
 
 void M1kRenderer::endSwapChainRenderPass(VkCommandBuffer command_buffer) {
-    assert(is_frame_started && "Cannot call endSwapChainRenderPass if frame is not in progress");
+    assert(is_frame_started_ && "Cannot call endSwapChainRenderPass if frame is not in progress");
     assert(
         command_buffer == getCurrentCommandBuffer() &&
         "Cannot end render pass on command buffer_ from a different frame");

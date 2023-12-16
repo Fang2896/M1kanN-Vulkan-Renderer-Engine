@@ -51,7 +51,7 @@ class M1kGameObject {
     M1kGameObject(M1kGameObject &&) = default;
     M1kGameObject &operator=(M1kGameObject &&) = default;
 
-    id_t getId() { return id; }
+    id_t getId() { return id_; }
 
     glm::vec3 color{};
     TransformComponent transform{};
@@ -61,9 +61,9 @@ class M1kGameObject {
     std::unique_ptr<PointLightComponent> point_light = nullptr;
 
    private:
-    M1kGameObject(id_t objectId) : id(objectId) {}
+    M1kGameObject(id_t objectId) : id_(objectId) {}
 
-    id_t id;
+    id_t id_;
 };
 
 
