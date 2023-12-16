@@ -14,6 +14,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
+// imgui
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
+
 // std
 #include <stdexcept>
 #include <array>
@@ -35,7 +40,10 @@ M1kApplication::M1kApplication() {
     loadGameObjects();
 }
 
-M1kApplication::~M1kApplication() = default;
+M1kApplication::~M1kApplication() {
+    vkDestroyDescriptorPool(m1k_device_.device(), imgui_pool_, nullptr);
+    ImGui_ImplVulkan_Shutdown();
+}
 
 void M1kApplication::run() {
     std::vector<std::unique_ptr<M1kBuffer>> ubo_buffers(M1kSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -70,6 +78,9 @@ void M1kApplication::run() {
                                             m1k_renderer_.getSwapChainRenderPass(),
                                             global_set_layout->getDescriptorSetLayout()};
 
+    // imgui
+    initImGUI();
+
     std::cout << "max push constant size: " << m1k_device_.properties.limits.maxPushConstantsSize << "\n";
     M1kCamera camera{};
     camera.setViewTarget(glm::vec3(-1.0f, -2.0f, -2.5f), glm::vec3(0.0f,0.0f,0.0f));
@@ -78,9 +89,12 @@ void M1kApplication::run() {
     viewer_object.transform.translation.z = -2.5f;
     KeyboardMovementController camera_controller{};
 
+    // game loop
     auto current_time = std::chrono::high_resolution_clock::now();
     while(!m1k_window_.shouldClose()) {
         glfwPollEvents();   // may block
+        ImGui_ImplGlfw_NewFrame();
+
 
         auto new_time = std::chrono::high_resolution_clock::now();
         float frame_time =
@@ -134,12 +148,20 @@ void M1kApplication::run() {
             // ubo_buffers[frame_index]->writeToIndex(&ubo, frame_index);
             // ubo_buffers[frame_index]->flushIndex(frame_index);
 
+            // init Imgui frame
+            ImGui_ImplVulkan_NewFrame();
+            ImGui::NewFrame();
+            ImGui::ShowDemoWindow();    // ImGui rendering instruction
+            ImGui::Render();    // finish imgui frame
+
             // render
             m1k_renderer_.beginSwapChainRenderPass(command_buffer);
 
-
             simple_render_system.renderGameObjects(frame_info);
             point_light_system.render(frame_info);
+
+            // render ImGui draw data
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
 
             m1k_renderer_.endSwapChainRenderPass(command_buffer);
             m1k_renderer_.endFrame();
@@ -147,6 +169,70 @@ void M1kApplication::run() {
     }
 
     vkDeviceWaitIdle(m1k_device_.device());
+}
+
+void M1kApplication::initImGUI() {
+    //1: create descriptor pool for IMGUI
+    // the size of the pool is very oversize, but it's copied from imgui demo itself.
+    VkDescriptorPoolSize pool_sizes[] =
+        {
+            { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+            { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+            { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+        };
+
+    VkDescriptorPoolCreateInfo pool_info = {};
+    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    pool_info.maxSets = 1000;
+    pool_info.poolSizeCount = std::size(pool_sizes);
+    pool_info.pPoolSizes = pool_sizes;
+
+    if(vkCreateDescriptorPool(m1k_device_.device(), &pool_info, nullptr, &imgui_pool_) != VK_SUCCESS) {
+        throw std::runtime_error("fail to create ImGUI's descriptor pool!");
+    }
+
+    // 2: initialize imgui library
+
+    //this initializes the core structures of imgui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    ImGui::StyleColorsDark();
+
+    //this initializes imgui for SDL
+    ImGui_ImplGlfw_InitForVulkan(m1k_window_.getGLFWwindow(), true);
+
+    //this initializes imgui for Vulkan
+    ImGui_ImplVulkan_InitInfo init_info = {};
+    init_info.Instance = m1k_device_.getVkInstance();
+    init_info.PhysicalDevice = m1k_device_.getPhyDevice();
+    init_info.Device = m1k_device_.device();
+    init_info.Queue = m1k_device_.graphicsQueue();
+    init_info.DescriptorPool = imgui_pool_;
+    init_info.MinImageCount = 3;
+    init_info.ImageCount = 3;
+    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+    ImGui_ImplVulkan_Init(&init_info, m1k_renderer_.getSwapChainRenderPass());
+
+    //execute a gpu command to upload imgui font textures
+    // upload
+    VkCommandBuffer temp_imgui_command_buffer = m1k_device_.beginSingleTimeCommands();
+    ImGui_ImplVulkan_CreateFontsTexture(temp_imgui_command_buffer);
+    m1k_device_.endSingleTimeCommands(temp_imgui_command_buffer);
+
+    //clear font textures from cpu data
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
 void M1kApplication::loadGameObjects() {

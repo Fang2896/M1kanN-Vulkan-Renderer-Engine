@@ -67,6 +67,7 @@ M1kDescriptorSetLayout::~M1kDescriptorSetLayout() {
 
 M1kDescriptorPool::Builder &M1kDescriptorPool::Builder::addPoolSize(
     VkDescriptorType descriptor_type, uint32_t count) {
+
     pool_sizes_.push_back({descriptor_type, count});
     return *this;
 }

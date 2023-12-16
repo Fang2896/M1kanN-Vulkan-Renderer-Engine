@@ -5,15 +5,16 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(Vulkan REQUIRED)
 
-
+add_executable(HelloVulkan)
 # =========== INCLUDE ============ #
-include_directories(${Vulkan_INCLUDE_DIR})
-include_directories(${Vulkan_INCLUDE_DIR}/../Third-Party/Include)
-
-include_directories(src/include)
-include_directories(third_party/include/obj_loader)
-include_directories(third_party/include/stb)
-include_directories(third_party/include/imgui)
+target_include_directories(HelloVulkan PRIVATE
+        ${Vulkan_INCLUDE_DIR}
+        ${Vulkan_INCLUDE_DIR}/../Third-Party/Include
+        src/include
+        third_party/include/obj_loader
+        third_party/include/stb
+        third_party/include/imgui
+        )
 
 if (WIN32)
     include_directories(third_party/include/GLFW)
@@ -24,9 +25,16 @@ endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/shaders)
 
-
-add_executable(HelloVulkan)
 target_sources(HelloVulkan PRIVATE
+        # imgui
+        third_party/include/imgui/imgui.cpp
+        third_party/include/imgui/imgui_demo.cpp
+        third_party/include/imgui/imgui_draw.cpp
+        third_party/include/imgui/imgui_widgets.cpp
+        third_party/include/imgui/imgui_tables.cpp
+        third_party/include/imgui/imgui_impl_glfw.cpp
+        third_party/include/imgui/imgui_impl_vulkan.cpp
+
         src/main.cpp
         src/m1k_window.cpp
         src/m1k_device.cpp

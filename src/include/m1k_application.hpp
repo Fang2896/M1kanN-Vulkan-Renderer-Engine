@@ -30,6 +30,7 @@ class M1kApplication {
     void run();
 
    private:
+    void initImGUI();
     void loadGameObjects();
 
     M1kWindow m1k_window_{kWidth, kHeight, "Hello Vulkan"};
@@ -37,6 +38,8 @@ class M1kApplication {
     M1kRenderer m1k_renderer_{m1k_window_, m1k_device_};
 
     std::unique_ptr<M1kDescriptorPool> global_pool_{};
+    VkDescriptorPool imgui_pool_;
+
     M1kGameObject::Map game_objects_;
 };
 
