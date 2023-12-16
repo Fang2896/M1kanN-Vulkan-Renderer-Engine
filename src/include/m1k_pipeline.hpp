@@ -54,7 +54,9 @@ class M1kPipeline {
     M1kPipeline operator=(const M1kPipeline&) = delete;
 
     void bind(VkCommandBuffer command_buffer);
+
     static void defaultPipelineConfigInfo(PipelineConfigInfo& config_info);
+    static void enableAlphaBlending(PipelineConfigInfo& config_info);
 
    private:
     static std::vector<char> readFile(const std::string& filepath);

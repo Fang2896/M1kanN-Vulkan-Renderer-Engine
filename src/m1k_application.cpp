@@ -137,6 +137,7 @@ void M1kApplication::run() {
             // render
             m1k_renderer_.beginSwapChainRenderPass(command_buffer);
 
+
             simple_render_system.renderGameObjects(frame_info);
             point_light_system.render(frame_info);
 

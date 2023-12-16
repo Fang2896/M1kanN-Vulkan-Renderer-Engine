@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <array>
 #include <iostream>
+#include <map>
 
 
 namespace m1k {
@@ -62,6 +63,7 @@ void PointLightSystem::createPipeline(VkRenderPass render_pass) {
 
     PipelineConfigInfo pipeline_config{};
     M1kPipeline::defaultPipelineConfigInfo(pipeline_config);
+    M1kPipeline::enableAlphaBlending(pipeline_config);  // blending
 
     pipeline_config.binding_descriptions.clear();
     pipeline_config.attribute_descriptions.clear();
@@ -103,6 +105,17 @@ void PointLightSystem::update(FrameInfo &frame_info, GlobalUbo &ubo) {
 }
 
 void PointLightSystem::render(FrameInfo &frame_info) {
+    // sort lights
+    std::map<float, M1kGameObject::id_t> sorted;
+    for(auto& kv : frame_info.game_objects) {
+        auto& obj = kv.second;
+        if(obj.point_light == nullptr) continue;
+
+        auto offset = frame_info.camera.getPosition() - obj.transform.translation;
+        float dist_squared = glm::dot(offset, offset);
+        sorted[dist_squared] = obj.getId();
+    }
+
     m1k_pipeline_->bind(frame_info.command_buffer);
 
     vkCmdBindDescriptorSets(
@@ -113,10 +126,9 @@ void PointLightSystem::render(FrameInfo &frame_info) {
         &frame_info.global_descriptor_set,
         0, nullptr);
 
-    for(auto &kv : frame_info.game_objects) {
-        auto &obj = kv.second;
-        // filter
-        if (obj.point_light == nullptr) continue;
+    // render in point light distance order
+    for(auto it = sorted.rbegin(); it != sorted.rend(); it++) {
+        auto &obj = frame_info.game_objects.at(it->second);
 
         PointLightPushConstants push{};
         push.position = glm::vec4(obj.transform.translation, 1.0f);

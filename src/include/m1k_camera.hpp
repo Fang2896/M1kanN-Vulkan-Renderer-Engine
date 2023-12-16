@@ -26,6 +26,7 @@ class M1kCamera {
     const glm::mat4& getProjection() const { return projection_matrix_; }
     const glm::mat4& getView() const { return view_matrix_; }
     const glm::mat4& getViewInverse() const { return inverse_view_matrix_; }
+    const glm::vec3 getPosition() const { return glm::vec3(inverse_view_matrix_[3]); }
 
    private:
     glm::mat4 projection_matrix_{1.0f};
