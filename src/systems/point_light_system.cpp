@@ -147,6 +147,29 @@ void PointLightSystem::render(FrameInfo &frame_info) {
     }
 }
 
+void PointLightSystem::setAllPointLightsIntensity(float intensity, FrameInfo &frame_info) {
+    for(auto& kv : frame_info.game_objects) {
+        auto &obj = kv.second;
+        if(obj.point_light == nullptr) continue;
+
+        obj.point_light->light_intensity = intensity;
+    }
+}
+
+void PointLightSystem::setSinglePointLightIntensity(uint32_t id, float intensity, FrameInfo &frame_info) {
+    auto &obj = frame_info.game_objects.at(id);
+    obj.point_light->light_intensity = intensity;
+}
+
+float PointLightSystem::getOnePointLightIntensity(FrameInfo &frame_info) {
+    for(auto& kv : frame_info.game_objects) {
+        auto& obj = kv.second;
+        if(obj.point_light != nullptr) return obj.point_light->light_intensity;
+    }
+
+    return -1.0f;
+}
+
 }
 
 

@@ -9,7 +9,7 @@
  * https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanBuffer.h
  */
 
-#include "m1k_buffer.hpp"
+#include "core/m1k_buffer.hpp"
 
 // std
 #include <cassert>

@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "m1k_window.hpp"
-#include "m1k_device.hpp"
+#include "ui/m1k_window.hpp"
+#include "core/m1k_device.hpp"
 #include "m1k_game_object.hpp"
-#include "m1k_renderer.hpp"
-#include "m1k_descriptor.hpp"
+#include "core/m1k_renderer.hpp"
+#include "core/m1k_descriptor.hpp"
 
 // std
 #include <memory>
@@ -17,8 +17,8 @@ namespace m1k {
 
 class M1kApplication {
    public:
-    static constexpr int kWidth = 800;
-    static constexpr int kHeight = 600;
+    static constexpr int kWidth = 1366;
+    static constexpr int kHeight = 768;
 
     M1kApplication();
     ~M1kApplication();
@@ -38,7 +38,7 @@ class M1kApplication {
     M1kRenderer m1k_renderer_{m1k_window_, m1k_device_};
 
     std::unique_ptr<M1kDescriptorPool> global_pool_{};
-    VkDescriptorPool imgui_pool_;
+    std::unique_ptr<M1kDescriptorPool> imgui_pool_{};
 
     M1kGameObject::Map game_objects_;
 };

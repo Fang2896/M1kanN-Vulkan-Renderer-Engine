@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "m1k_device.hpp"
-#include "m1k_pipeline.hpp"
+#include "core/m1k_device.hpp"
+#include "core/m1k_pipeline.hpp"
 #include "m1k_game_object.hpp"
 #include "m1k_camera.hpp"
 #include "m1k_frame_info.hpp"
@@ -27,6 +27,10 @@ public:
     void update(FrameInfo &frame_info, GlobalUbo &ubo);
     void render(FrameInfo &frame_info);
 
+    void setAllPointLightsIntensity(float intensity, FrameInfo &frame_info);
+    void setSinglePointLightIntensity(uint32_t id, float intensity, FrameInfo &frame_info);
+    float getOnePointLightIntensity(FrameInfo &frame_info);
+
 private:
     void createPipelineLayout(VkDescriptorSetLayout global_set_layout);
     void createPipeline(VkRenderPass render_pass);
@@ -36,5 +40,6 @@ private:
     std::unique_ptr<M1kPipeline> m1k_pipeline_;
     VkPipelineLayout pipeline_layout_;
 };
+
 
 }

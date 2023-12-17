@@ -2,7 +2,7 @@
 // Created by fangl on 2023/11/25.
 //
 
-#include "m1k_renderer.hpp"
+#include "core/m1k_renderer.hpp"
 
 // std
 #include <stdexcept>

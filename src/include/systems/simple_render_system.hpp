@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "m1k_device.hpp"
-#include "m1k_pipeline.hpp"
+#include "core/m1k_device.hpp"
+#include "core/m1k_pipeline.hpp"
 #include "m1k_game_object.hpp"
 #include "m1k_camera.hpp"
 #include "m1k_frame_info.hpp"

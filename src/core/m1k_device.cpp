@@ -2,7 +2,7 @@
 // Created by fangl on 2023/11/10.
 //
 
-#include "m1k_device.hpp"
+#include "core/m1k_device.hpp"
 
 // std headers
 #include <cstring>
@@ -68,6 +68,8 @@ M1kDevice::M1kDevice(M1kWindow &window) : window_{window} {
     createLogicalDevice();
     // help with command buffer_ allocation or something else
     createCommandPool();
+
+    std::cout << "max push constant size: " << properties.limits.maxPushConstantsSize << "\n";
 }
 
 M1kDevice::~M1kDevice() {

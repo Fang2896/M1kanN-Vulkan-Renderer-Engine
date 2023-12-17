@@ -2,7 +2,7 @@
 // Created by fangl on 2023/11/10.
 //
 
-#include "m1k_pipeline.hpp"
+#include "core/m1k_pipeline.hpp"
 #include "m1k_model.hpp"
 
 // std

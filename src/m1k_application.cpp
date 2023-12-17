@@ -4,10 +4,10 @@
 
 #include "m1k_application.hpp"
 #include "m1k_camera.hpp"
-#include "m1k_buffer.hpp"
+#include "core/m1k_buffer.hpp"
 #include "systems/simple_render_system.hpp"
 #include "systems/point_light_system.hpp"
-#include "keyboard_movement_controller.hpp"
+#include "ui/keyboard_movement_controller.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -32,16 +32,18 @@ namespace m1k {
 
 
 M1kApplication::M1kApplication() {
+    initImGUI();
+
     global_pool_ =
         M1kDescriptorPool::Builder(m1k_device_)
             .setMaxSets(M1kSwapChain::MAX_FRAMES_IN_FLIGHT)
             .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, M1kSwapChain::MAX_FRAMES_IN_FLIGHT)
             .build();
+
     loadGameObjects();
 }
 
 M1kApplication::~M1kApplication() {
-    vkDestroyDescriptorPool(m1k_device_.device(), imgui_pool_, nullptr);
     ImGui_ImplVulkan_Shutdown();
 }
 
@@ -78,10 +80,6 @@ void M1kApplication::run() {
                                             m1k_renderer_.getSwapChainRenderPass(),
                                             global_set_layout->getDescriptorSetLayout()};
 
-    // imgui
-    initImGUI();
-
-    std::cout << "max push constant size: " << m1k_device_.properties.limits.maxPushConstantsSize << "\n";
     M1kCamera camera{};
     camera.setViewTarget(glm::vec3(-1.0f, -2.0f, -2.5f), glm::vec3(0.0f,0.0f,0.0f));
 
@@ -89,12 +87,11 @@ void M1kApplication::run() {
     viewer_object.transform.translation.z = -2.5f;
     KeyboardMovementController camera_controller{};
 
-    // game loop
+    //  game loop
     auto current_time = std::chrono::high_resolution_clock::now();
     while(!m1k_window_.shouldClose()) {
         glfwPollEvents();   // may block
         ImGui_ImplGlfw_NewFrame();
-
 
         auto new_time = std::chrono::high_resolution_clock::now();
         float frame_time =
@@ -132,26 +129,19 @@ void M1kApplication::run() {
             ubo_buffers[frame_index]->writeToBuffer(&ubo);
             ubo_buffers[frame_index]->flush();
 
-            // WRONG: ???? WHY?????
-            /*
-             * [ VUID-VkMappedMemoryRange-size-01390 ] Object 0: handle = 0x3fbcd60000000028,
-             * type = VK_OBJECT_TYPE_DEVICE_MEMORY;
-             * | MessageID = 0xdd4e6d8b | vkFlushMappedMemoryRanges():
-             * pMemoryRanges[0].size (80) is not a multiple of VkPhysicalDeviceLimits::nonCoherentAtomSize (64)
-             * and offset + size (0 + 80 = 80) not equal to the memory size (128).
-             * The Vulkan spec states: If size is not equal to VK_WHOLE_SIZE,
-             * size must either be a multiple of VkPhysicalDeviceLimits::nonCoherentAtomSize,
-             * or offset plus size must equal the size of memory
-             * (https://vulkan.lunarg.com/doc/view/1.3.268.0/windows/1.3-extensions/vkspec.html#VUID-VkMappedMemoryRange-size-01390)
-
-             */
-            // ubo_buffers[frame_index]->writeToIndex(&ubo, frame_index);
-            // ubo_buffers[frame_index]->flushIndex(frame_index);
-
             // init Imgui frame
             ImGui_ImplVulkan_NewFrame();
+
             ImGui::NewFrame();
-            ImGui::ShowDemoWindow();    // ImGui rendering instruction
+
+            // point light control
+            ImGui::Begin("Point Light Control");
+            float current_intensity = point_light_system.getOnePointLightIntensity(frame_info);
+            if (current_intensity >= 0 && ImGui::SliderFloat("Point Light Intensity", &current_intensity, 0.0f, 1.0f)) {
+                point_light_system.setAllPointLightsIntensity(current_intensity, frame_info);
+            }
+            ImGui::End();
+
             ImGui::Render();    // finish imgui frame
 
             // render
@@ -174,31 +164,21 @@ void M1kApplication::run() {
 void M1kApplication::initImGUI() {
     //1: create descriptor pool for IMGUI
     // the size of the pool is very oversize, but it's copied from imgui demo itself.
-    VkDescriptorPoolSize pool_sizes[] =
-        {
-            { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-            { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-            { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-            { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-            { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-            { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
-        };
-
-    VkDescriptorPoolCreateInfo pool_info = {};
-    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-    pool_info.maxSets = 1000;
-    pool_info.poolSizeCount = std::size(pool_sizes);
-    pool_info.pPoolSizes = pool_sizes;
-
-    if(vkCreateDescriptorPool(m1k_device_.device(), &pool_info, nullptr, &imgui_pool_) != VK_SUCCESS) {
-        throw std::runtime_error("fail to create ImGUI's descriptor pool!");
-    }
+    imgui_pool_ =
+        M1kDescriptorPool::Builder(m1k_device_)
+            .setMaxSets(M1kSwapChain::MAX_FRAMES_IN_FLIGHT * 2)
+            .setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 20)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 20)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 20)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 20)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 20)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 20)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 20)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 20)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 20)
+            .build();
 
     // 2: initialize imgui library
 
@@ -218,7 +198,7 @@ void M1kApplication::initImGUI() {
     init_info.PhysicalDevice = m1k_device_.getPhyDevice();
     init_info.Device = m1k_device_.device();
     init_info.Queue = m1k_device_.graphicsQueue();
-    init_info.DescriptorPool = imgui_pool_;
+    init_info.DescriptorPool = imgui_pool_->getPool();
     init_info.MinImageCount = 3;
     init_info.ImageCount = 3;
     init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
@@ -237,8 +217,8 @@ void M1kApplication::initImGUI() {
 
 void M1kApplication::loadGameObjects() {
     // vase objects:
-    std::shared_ptr<M1kModel> flat_vase_model = M1kModel::createModelFromFile(m1k_device_, "../resources/models/flat_vase.obj");
-    std::shared_ptr<M1kModel> smooth_vase_model = M1kModel::createModelFromFile(m1k_device_, "../resources/models/smooth_vase.obj");
+    std::shared_ptr<M1kModel> flat_vase_model = M1kModel::createModelFromFile(m1k_device_, "../assets/models/flat_vase.obj");
+    std::shared_ptr<M1kModel> smooth_vase_model = M1kModel::createModelFromFile(m1k_device_, "../assets/models/smooth_vase.obj");
 
     auto flat_vase = M1kGameObject::createGameObject();
     flat_vase.model = flat_vase_model;
@@ -253,7 +233,7 @@ void M1kApplication::loadGameObjects() {
     game_objects_.emplace(smooth_vase.getId(), std::move(smooth_vase));
 
     // plane objects:
-    std::shared_ptr<M1kModel> plane_object_model = M1kModel::createModelFromFile(m1k_device_, "../resources/models/quad.obj");
+    std::shared_ptr<M1kModel> plane_object_model = M1kModel::createModelFromFile(m1k_device_, "../assets/models/quad.obj");
     auto plane_object = M1kGameObject::createGameObject();
     plane_object.model = plane_object_model;
     plane_object.transform.translation = {0.0f, 0.5f, 0.0f};
@@ -271,7 +251,7 @@ void M1kApplication::loadGameObjects() {
     };
 
     for (int i = 0; i < point_light_colors.size(); ++i) {
-        auto point_light = M1kGameObject::makePointLight(0.4f);
+        auto point_light = M1kGameObject::makePointLight(0.8f);
         point_light.color = point_light_colors[i];
         auto rotate_light = glm::rotate(
             glm::mat4(1.0f),

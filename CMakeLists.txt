@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.23)
-project(HelloVulkan)
+project(M1kanN_Vulkan_Engine_Project)
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(Vulkan REQUIRED)
-
-add_executable(HelloVulkan)
+set(MY_ENGINE_NAME M1kanN_Vulkan_Engine)
+add_executable(${MY_ENGINE_NAME})
 # =========== INCLUDE ============ #
-target_include_directories(HelloVulkan PRIVATE
+find_package(Vulkan REQUIRED)
+target_include_directories(${MY_ENGINE_NAME} PRIVATE
         ${Vulkan_INCLUDE_DIR}
         ${Vulkan_INCLUDE_DIR}/../Third-Party/Include
         src/include
@@ -25,7 +25,7 @@ endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/shaders)
 
-target_sources(HelloVulkan PRIVATE
+target_sources(${MY_ENGINE_NAME} PRIVATE
         # imgui
         third_party/include/imgui/imgui.cpp
         third_party/include/imgui/imgui_demo.cpp
@@ -35,36 +35,40 @@ target_sources(HelloVulkan PRIVATE
         third_party/include/imgui/imgui_impl_glfw.cpp
         third_party/include/imgui/imgui_impl_vulkan.cpp
 
+        src/ui/m1k_window.cpp
+        src/ui/keyboard_movement_controller.cpp
+
+        src/core/m1k_device.cpp
+        src/core/m1k_pipeline.cpp
+        src/core/m1k_renderer.cpp
+        src/core/m1k_swap_chain.cpp
+        src/core/m1k_buffer.cpp
+        src/core/m1k_descriptor.cpp
+
         src/main.cpp
-        src/m1k_window.cpp
-        src/m1k_device.cpp
-        src/m1k_pipeline.cpp
         src/m1k_application.cpp
-        src/m1k_swap_chain.cpp
         src/m1k_model.cpp
-        src/m1k_renderer.cpp
         src/m1k_camera.cpp
         src/m1k_game_object.cpp
-        src/m1k_buffer.cpp
-        src/m1k_descriptor.cpp
+
         src/systems/point_light_system.cpp
         src/systems/simple_render_system.cpp
-        src/keyboard_movement_controller.cpp
+
         )
 
 if (WIN32)
     message(STATUS "==== Windows System ====")
     set(GLFW_LIB_PATH ${CMAKE_SOURCE_DIR}/third_party/lib/glfw3/glfw3.lib)
-    target_link_libraries(HelloVulkan
+    target_link_libraries(${MY_ENGINE_NAME}
             ${Vulkan_LIBRARIES}
             ${GLFW_LIB_PATH})
 elseif (APPLE)
     message(STATUS "==== Mac System ====")
     find_package(glfw3 REQUIRED)
-    target_link_libraries(HelloVulkan ${Vulkan_LIBRARIES} glfw)
+    target_link_libraries(${MY_ENGINE_NAME} ${Vulkan_LIBRARIES} glfw)
 else ()
     message(FATAL_ERROR "Unsupported Platform")
 endif ()
 
 
-add_dependencies(HelloVulkan Shaders)
+add_dependencies(${MY_ENGINE_NAME} Shaders)
