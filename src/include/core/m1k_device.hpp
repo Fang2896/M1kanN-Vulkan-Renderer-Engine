@@ -51,9 +51,8 @@ class M1kDevice {
     VkCommandPool getCommandPool() { return command_pool_; }
     VkDevice device() { return device_; }
     VkSurfaceKHR surface() { return surface_; }
-    VkQueue graphicsQueue() { return graphicsQueue_; }
-    VkQueue presentQueue() { return presentQueue_; }
-
+    VkQueue graphicsQueue() { return graphics_queue_; }
+    VkQueue presentQueue() { return present_queue_; }
 
     SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physical_device_); }
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -73,12 +72,13 @@ class M1kDevice {
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void copyBufferToImage(
         VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
-
     void createImageWithInfo(
         const VkImageCreateInfo &imageInfo,
         VkMemoryPropertyFlags properties,
         VkImage &image,
         VkDeviceMemory &imageMemory);
+    void transitionImageLayout(VkImage image, VkFormat format,
+                               VkImageLayout old_layout, VkImageLayout new_layout);
 
     VkPhysicalDeviceProperties properties;
 
@@ -108,8 +108,8 @@ class M1kDevice {
 
     VkDevice device_;
     VkSurfaceKHR surface_;
-    VkQueue graphicsQueue_;
-    VkQueue presentQueue_;
+    VkQueue graphics_queue_;
+    VkQueue present_queue_;
 
     const std::vector<const char *> validation_layers_ = {"VK_LAYER_KHRONOS_validation"};
     const std::vector<const char *> device_extensions_ = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};

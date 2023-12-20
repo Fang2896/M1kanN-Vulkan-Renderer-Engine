@@ -44,7 +44,6 @@ class M1kModel {
         void loadModel(const std::string &filepath);
     };
 
-
     M1kModel(M1kDevice& device, const M1kModel::Builder &builder);
     ~M1kModel();
 

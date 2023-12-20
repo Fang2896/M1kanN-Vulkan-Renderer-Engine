@@ -4,7 +4,7 @@ project(M1kanN_Vulkan_Engine_Project)
 set(CMAKE_CXX_STANDARD 17)
 
 set(MY_ENGINE_NAME M1kanN_Vulkan_Engine)
-add_executable(${MY_ENGINE_NAME})
+add_executable(${MY_ENGINE_NAME} src/include/m1k_texture.hpp src/m1k_texture.cpp)
 # =========== INCLUDE ============ #
 find_package(Vulkan REQUIRED)
 target_include_directories(${MY_ENGINE_NAME} PRIVATE
@@ -48,6 +48,7 @@ target_sources(${MY_ENGINE_NAME} PRIVATE
         src/main.cpp
         src/m1k_application.cpp
         src/m1k_model.cpp
+        src/m1k_texture.cpp
         src/m1k_camera.cpp
         src/m1k_game_object.cpp
 

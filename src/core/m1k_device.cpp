@@ -196,8 +196,8 @@ void M1kDevice::createLogicalDevice() {
         throw std::runtime_error("failed to create logical device_!");
     }
 
-    vkGetDeviceQueue(device_, indices.graphicsFamily, 0, &graphicsQueue_);
-    vkGetDeviceQueue(device_, indices.presentFamily, 0, &presentQueue_);
+    vkGetDeviceQueue(device_, indices.graphicsFamily, 0, &graphics_queue_);
+    vkGetDeviceQueue(device_, indices.presentFamily, 0, &present_queue_);
 }
 
 void M1kDevice::createCommandPool() {
@@ -488,8 +488,8 @@ void M1kDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(graphicsQueue_);
+    vkQueueSubmit(graphics_queue_, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(graphics_queue_);
 
     vkFreeCommandBuffers(device_, command_pool_, 1, &commandBuffer);
 }
@@ -507,7 +507,7 @@ void M1kDevice::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize 
 }
 
 void M1kDevice::copyBufferToImage(
-    VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount) {
+    VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layer_count) {
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     VkBufferImageCopy region{};
@@ -518,7 +518,7 @@ void M1kDevice::copyBufferToImage(
     region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     region.imageSubresource.mipLevel = 0;
     region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount = layerCount;
+    region.imageSubresource.layerCount = layer_count;
 
     region.imageOffset = {0, 0, 0};
     region.imageExtent = {width, height, 1};
@@ -538,6 +538,7 @@ void M1kDevice::createImageWithInfo(
     VkMemoryPropertyFlags properties,
     VkImage &image,
     VkDeviceMemory &imageMemory) {
+
     if (vkCreateImage(device_, &imageInfo, nullptr, &image) != VK_SUCCESS) {
         throw std::runtime_error("failed to create image!");
     }
@@ -557,6 +558,40 @@ void M1kDevice::createImageWithInfo(
     if (vkBindImageMemory(device_, image, imageMemory, 0) != VK_SUCCESS) {
         throw std::runtime_error("failed to bind image memory_!");
     }
+}
+
+void M1kDevice::transitionImageLayout(VkImage image, VkFormat format,
+                           VkImageLayout old_layout, VkImageLayout new_layout) {
+
+    VkCommandBuffer command_buffer = beginSingleTimeCommands();
+
+    VkImageMemoryBarrier barrier = {};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.oldLayout = old_layout;
+    barrier.newLayout = new_layout;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+    barrier.image = image;
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+
+    barrier.srcAccessMask = 0; // TODO
+    barrier.dstAccessMask = 0; // TODO
+
+    vkCmdPipelineBarrier(
+        command_buffer,
+        0 /* TODO */, 0 /* TODO */,
+        0,
+        0, nullptr,
+        0, nullptr,
+        1, &barrier
+    );
+
+    endSingleTimeCommands(command_buffer);
 }
 
 }
