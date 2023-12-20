@@ -199,22 +199,11 @@ void  M1kSwapChain::createSwapChain() {
 
 void  M1kSwapChain::createImageViews() {
     swap_chain_image_views_.resize(swap_chain_images_.size());
-    for (size_t i = 0; i < swap_chain_images_.size(); i++) {
-        VkImageViewCreateInfo viewInfo{};
-        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewInfo.image = swap_chain_images_[i];
-        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.format = swap_chain_image_format_;
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        viewInfo.subresourceRange.baseMipLevel = 0;
-        viewInfo.subresourceRange.levelCount = 1;
-        viewInfo.subresourceRange.baseArrayLayer = 0;
-        viewInfo.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(device_.device(), &viewInfo, nullptr, &swap_chain_image_views_[i]) !=
-            VK_SUCCESS) {
-            throw std::runtime_error("failed to create texture image view!");
-        }
+    for (size_t i = 0; i < swap_chain_images_.size(); i++) {
+        swap_chain_image_views_[i] =
+            device_.createImageView(swap_chain_images_[i],
+                                    swap_chain_image_format_);
     }
 }
 

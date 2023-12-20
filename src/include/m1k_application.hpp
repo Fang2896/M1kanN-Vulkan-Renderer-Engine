@@ -4,11 +4,17 @@
 
 #pragma once
 
-#include "ui/m1k_window.hpp"
+#include "m1k_texture.hpp"
+#include "m1k_camera.hpp"
 #include "core/m1k_device.hpp"
 #include "m1k_game_object.hpp"
 #include "core/m1k_renderer.hpp"
 #include "core/m1k_descriptor.hpp"
+#include "core/m1k_buffer.hpp"
+#include "systems/simple_render_system.hpp"
+#include "systems/point_light_system.hpp"
+#include "ui/keyboard_movement_controller.hpp"
+#include "ui/m1k_window.hpp"
 
 // std
 #include <memory>

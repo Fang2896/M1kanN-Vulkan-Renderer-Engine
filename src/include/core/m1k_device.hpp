@@ -60,6 +60,9 @@ class M1kDevice {
     VkFormat findSupportedFormat(
         const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
+    VkCommandBuffer beginSingleTimeCommands();
+    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
     // Buffer Helper Functions
     void createBuffer(
         VkDeviceSize size,
@@ -67,8 +70,6 @@ class M1kDevice {
         VkMemoryPropertyFlags properties,
         VkBuffer &buffer,
         VkDeviceMemory &bufferMemory);
-    VkCommandBuffer beginSingleTimeCommands();
-    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void copyBufferToImage(
         VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
@@ -79,6 +80,7 @@ class M1kDevice {
         VkDeviceMemory &imageMemory);
     void transitionImageLayout(VkImage image, VkFormat format,
                                VkImageLayout old_layout, VkImageLayout new_layout);
+    VkImageView createImageView(VkImage image, VkFormat format);
 
     VkPhysicalDeviceProperties properties;
 
@@ -92,6 +94,7 @@ class M1kDevice {
 
     // helper functions
     bool isDeviceSuitable(VkPhysicalDevice device);
+    VkSampleCountFlagBits getMaxUsableSampleCount();
     std::vector<const char *> getRequiredExtensions();
     bool checkValidationLayerSupport();
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
@@ -113,6 +116,9 @@ class M1kDevice {
 
     const std::vector<const char *> validation_layers_ = {"VK_LAYER_KHRONOS_validation"};
     const std::vector<const char *> device_extensions_ = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+    // tracer member variables
+    VkSampleCountFlagBits msaa_samples_ = VK_SAMPLE_COUNT_1_BIT;
 };
 
 }

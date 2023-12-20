@@ -17,6 +17,7 @@ M1kPipeline::M1kPipeline(M1kDevice& device,
             const PipelineConfigInfo& config_info,
             const std::string& vert_filepath,
             const std::string& frag_filepath) : m1k_device_(device) {
+
           createGraphicPipeline(config_info, vert_filepath, frag_filepath);
 }
 

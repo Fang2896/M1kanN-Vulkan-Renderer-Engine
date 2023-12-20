@@ -3,11 +3,6 @@
 //
 
 #include "m1k_application.hpp"
-#include "m1k_camera.hpp"
-#include "core/m1k_buffer.hpp"
-#include "systems/simple_render_system.hpp"
-#include "systems/point_light_system.hpp"
-#include "ui/keyboard_movement_controller.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -29,7 +24,7 @@
 namespace m1k {
 
 #define MAX_FRAME_TIME 0.5f
-
+#define MAX_MATERIALS_NUMBER 30
 
 M1kApplication::M1kApplication() {
     initImGUI();
@@ -38,6 +33,7 @@ M1kApplication::M1kApplication() {
         M1kDescriptorPool::Builder(m1k_device_)
             .setMaxSets(M1kSwapChain::MAX_FRAMES_IN_FLIGHT)
             .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, M1kSwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,MAX_MATERIALS_NUMBER)
             .build();
 
     loadGameObjects();
@@ -61,15 +57,22 @@ void M1kApplication::run() {
 
     auto global_set_layout = M1kDescriptorSetLayout::Builder(m1k_device_)
         .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+        .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
         .build();
 
+    // for all UBOs of each frame and textures
+    M1kTexture test_texture{m1k_device_, "../assets/textures/test_texture.jpg"};
+    auto& test_texture_image_info = test_texture.getDescriptorImageInfo();
     std::vector<VkDescriptorSet> global_descriptor_sets(M1kSwapChain::MAX_FRAMES_IN_FLIGHT);
-    for (int i = 0; i < global_descriptor_sets.size(); ++i) {
+
+    for (int i = 0; i < M1kSwapChain::MAX_FRAMES_IN_FLIGHT; ++i) {
         auto buffer_info = ubo_buffers[i]->descriptorInfo();
         M1kDescriptorWriter(*global_set_layout, *global_pool_)
             .writeBuffer(0, &buffer_info)
+            .writeImage(1, &test_texture_image_info)
             .build(global_descriptor_sets[i]);
     }
+
 
     // systems init
     SimpleRenderSystem simple_render_system{m1k_device_,
@@ -131,7 +134,6 @@ void M1kApplication::run() {
 
             // init Imgui frame
             ImGui_ImplVulkan_NewFrame();
-
             ImGui::NewFrame();
 
             // point light control
@@ -141,7 +143,6 @@ void M1kApplication::run() {
                 point_light_system.setAllPointLightsIntensity(current_intensity, frame_info);
             }
             ImGui::End();
-
             ImGui::Render();    // finish imgui frame
 
             // render

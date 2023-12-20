@@ -11,8 +11,8 @@ target_include_directories(${MY_ENGINE_NAME} PRIVATE
         ${Vulkan_INCLUDE_DIR}
         ${Vulkan_INCLUDE_DIR}/../Third-Party/Include
         src/include
-        third_party/include/obj_loader
         third_party/include/stb
+        third_party/include/obj_loader
         third_party/include/imgui
         )
 

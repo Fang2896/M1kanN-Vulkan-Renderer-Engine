@@ -22,8 +22,10 @@ M1kDescriptorSetLayout::Builder &M1kDescriptorSetLayout::Builder::addBinding(
     assert(bindings.count(binding) == 0 && "Binding already in use");
     VkDescriptorSetLayoutBinding layout_binding{};
     layout_binding.binding = binding;
-    layout_binding.descriptorType = descriptor_type;
     layout_binding.descriptorCount = count;
+
+    layout_binding.descriptorType = descriptor_type;
+    layout_binding.pImmutableSamplers = nullptr;
     layout_binding.stageFlags = stage_flags;
     bindings[binding] = layout_binding;
     return *this;
@@ -39,6 +41,7 @@ std::unique_ptr<M1kDescriptorSetLayout> M1kDescriptorSetLayout::Builder::build()
 M1kDescriptorSetLayout::M1kDescriptorSetLayout(
     M1kDevice &m1k_device, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings)
     : m1k_device_{m1k_device}, bindings{bindings} {
+
     std::vector<VkDescriptorSetLayoutBinding> set_layout_bindings{};
     for (auto kv : bindings) {
         set_layout_bindings.push_back(kv.second);
