@@ -174,6 +174,11 @@ void M1kDevice::createLogicalDevice() {
     VkPhysicalDeviceFeatures deviceFeatures = {};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
 
+    // MSAA resolve extension
+    VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT msToSingleSampledFeature = {};
+    msToSingleSampledFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT;
+    msToSingleSampledFeature.multisampledRenderToSingleSampled = VK_TRUE;
+
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
@@ -183,6 +188,7 @@ void M1kDevice::createLogicalDevice() {
     createInfo.pEnabledFeatures = &deviceFeatures;
     createInfo.enabledExtensionCount = static_cast<uint32_t>(device_extensions_.size());
     createInfo.ppEnabledExtensionNames = device_extensions_.data();
+    createInfo.pNext = &msToSingleSampledFeature;
 
     // might not really be necessary anymore because device_ specific validation layers
     // have been deprecated
@@ -226,6 +232,8 @@ bool M1kDevice::isDeviceSuitable(VkPhysicalDevice device) {
     if (extensionsSupported) {
         SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
         swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+    } else {
+        throw std::runtime_error("one device extensions are not supported");
     }
 
     VkPhysicalDeviceFeatures supportedFeatures;
@@ -577,8 +585,9 @@ void M1kDevice::createImageWithInfo(
 }
 
 void M1kDevice::transitionImageLayout(VkImage image, VkFormat format,
-                           VkImageLayout old_layout, VkImageLayout new_layout) {
-
+                           VkImageLayout old_layout, VkImageLayout new_layout,
+                                      uint32_t mip_level)
+{
     VkCommandBuffer command_buffer = beginSingleTimeCommands();
 
     VkImageMemoryBarrier barrier = {};
@@ -591,7 +600,7 @@ void M1kDevice::transitionImageLayout(VkImage image, VkFormat format,
     barrier.image = image;
     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.levelCount = mip_level;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
 
@@ -610,6 +619,11 @@ void M1kDevice::transitionImageLayout(VkImage image, VkFormat format,
 
         source_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         destination_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    } else if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED && new_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        source_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destination_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     } else {
         throw std::invalid_argument("unsupported layout transition!");
     }
@@ -627,15 +641,16 @@ void M1kDevice::transitionImageLayout(VkImage image, VkFormat format,
     endSingleTimeCommands(command_buffer);
 }
 
-VkImageView M1kDevice::createImageView(VkImage image, VkFormat format) {
+VkImageView M1kDevice::createImageView(VkImage image, VkFormat format, uint32_t mip_level, VkImageAspectFlags aspectFlags) {
     VkImageViewCreateInfo view_info = {};
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     view_info.image = image;
     view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
     view_info.format = format;
-    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+    view_info.subresourceRange.aspectMask = aspectFlags;
     view_info.subresourceRange.baseMipLevel = 0;
-    view_info.subresourceRange.levelCount = 1;
+    view_info.subresourceRange.levelCount = mip_level;
     view_info.subresourceRange.baseArrayLayer = 0;
     view_info.subresourceRange.layerCount = 1;
 

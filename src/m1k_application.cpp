@@ -61,7 +61,7 @@ void M1kApplication::run() {
         .build();
 
     // for all UBOs of each frame and textures
-    M1kTexture test_texture{m1k_device_, "../assets/textures/test_texture.jpg"};
+    M1kTexture test_texture{m1k_device_, "../assets/textures/default_texture.png"};
     auto& test_texture_image_info = test_texture.getDescriptorImageInfo();
     std::vector<VkDescriptorSet> global_descriptor_sets(M1kSwapChain::MAX_FRAMES_IN_FLIGHT);
 

@@ -47,6 +47,7 @@ class M1kDevice {
     // only for imgui, to be optimized
     VkInstance getVkInstance() const { return instance_; }
     VkPhysicalDevice getPhyDevice() const { return physical_device_; };
+    VkSampleCountFlagBits getUsableSampleCount() { return msaa_samples_; }
 
     VkCommandPool getCommandPool() { return command_pool_; }
     VkDevice device() { return device_; }
@@ -79,8 +80,9 @@ class M1kDevice {
         VkImage &image,
         VkDeviceMemory &imageMemory);
     void transitionImageLayout(VkImage image, VkFormat format,
-                               VkImageLayout old_layout, VkImageLayout new_layout);
-    VkImageView createImageView(VkImage image, VkFormat format);
+                               VkImageLayout old_layout, VkImageLayout new_layout,
+                               uint32_t mip_level=1);
+    VkImageView createImageView(VkImage image, VkFormat format, uint32_t mip_level=1, VkImageAspectFlags aspectFlags=VK_IMAGE_ASPECT_COLOR_BIT);
 
     VkPhysicalDeviceProperties properties;
 
@@ -115,7 +117,15 @@ class M1kDevice {
     VkQueue present_queue_;
 
     const std::vector<const char *> validation_layers_ = {"VK_LAYER_KHRONOS_validation"};
+
+#ifdef __MACH__
+    const std::vector<const char *> device_extensions_ =
+        {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+         "VK_KHR_portability_subset",
+         "VK_EXT_multisampled_render_to_single_sampled"};
+#else
     const std::vector<const char *> device_extensions_ = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+#endif
 
     // tracer member variables
     VkSampleCountFlagBits msaa_samples_ = VK_SAMPLE_COUNT_1_BIT;
