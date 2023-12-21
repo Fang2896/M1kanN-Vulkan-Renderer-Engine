@@ -23,11 +23,10 @@ M1kTexture::M1kTexture(M1kDevice& device, const std::string& path)
 }
 
 M1kTexture::~M1kTexture() {
+    vkDestroyImageView(m1k_device_.device(), m1k_texture_image_view_, nullptr);
     vkDestroyImage(m1k_device_.device(), m1k_texture_image_, nullptr);
     vkFreeMemory(m1k_device_.device(), m1k_texture_image_memory_, nullptr);
-
     vkDestroySampler(m1k_device_.device(), m1k_texture_sampler_, nullptr);
-    vkDestroyImageView(m1k_device_.device(), m1k_texture_image_view_, nullptr);
 }
 
 VkDescriptorImageInfo& M1kTexture::getDescriptorImageInfo() {
@@ -111,9 +110,9 @@ void M1kTexture::createImage(uint32_t width, uint32_t height, uint32_t mip_level
 
 
 void M1kTexture::createTextureImageView() {
-    m1k_texture_image_view_ = m1k_device_.createImageView(m1k_texture_image_,
-                                                          VK_FORMAT_R8G8B8A8_UNORM,
-                                                          mip_levels_);
+     m1k_device_.createImageView(m1k_texture_image_, m1k_texture_image_view_,
+                                VK_FORMAT_R8G8B8A8_UNORM,
+                                mip_levels_);
 }
 
 void M1kTexture::createTextureSampler(VkFilter filter_mode,

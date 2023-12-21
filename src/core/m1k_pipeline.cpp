@@ -164,8 +164,8 @@ void M1kPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& config_info) {
     config_info.rasterization_info.depthBiasSlopeFactor = 0.0f;     // Optional
 
     config_info.multisample_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    config_info.multisample_info.sampleShadingEnable = VK_TRUE;
-    config_info.multisample_info.rasterizationSamples = VK_SAMPLE_COUNT_4_BIT;
+    config_info.multisample_info.sampleShadingEnable = VK_FALSE;
+    config_info.multisample_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
     config_info.multisample_info.minSampleShading = 1.0f;           // Optional
     config_info.multisample_info.pSampleMask = nullptr;             // Optional
     config_info.multisample_info.alphaToCoverageEnable = VK_FALSE;  // Optional

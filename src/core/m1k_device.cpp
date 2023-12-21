@@ -173,11 +173,7 @@ void M1kDevice::createLogicalDevice() {
 
     VkPhysicalDeviceFeatures deviceFeatures = {};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
-
-    // MSAA resolve extension
-    VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT msToSingleSampledFeature = {};
-    msToSingleSampledFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT;
-    msToSingleSampledFeature.multisampledRenderToSingleSampled = VK_TRUE;
+    deviceFeatures.sampleRateShading = VK_TRUE;
 
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -188,7 +184,14 @@ void M1kDevice::createLogicalDevice() {
     createInfo.pEnabledFeatures = &deviceFeatures;
     createInfo.enabledExtensionCount = static_cast<uint32_t>(device_extensions_.size());
     createInfo.ppEnabledExtensionNames = device_extensions_.data();
+
+#ifndef __MACH__
+    // MSAA resolve extension
+    VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT msToSingleSampledFeature = {};
+    msToSingleSampledFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT;
+    msToSingleSampledFeature.multisampledRenderToSingleSampled = VK_TRUE;
     createInfo.pNext = &msToSingleSampledFeature;
+#endif
 
     // might not really be necessary anymore because device_ specific validation layers
     // have been deprecated
@@ -641,7 +644,9 @@ void M1kDevice::transitionImageLayout(VkImage image, VkFormat format,
     endSingleTimeCommands(command_buffer);
 }
 
-VkImageView M1kDevice::createImageView(VkImage image, VkFormat format, uint32_t mip_level, VkImageAspectFlags aspectFlags) {
+void M1kDevice::createImageView(VkImage image, VkImageView& image_view,
+                                       VkFormat format, uint32_t mip_level,
+                                       VkImageAspectFlags aspectFlags) {
     VkImageViewCreateInfo view_info = {};
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     view_info.image = image;
@@ -654,12 +659,9 @@ VkImageView M1kDevice::createImageView(VkImage image, VkFormat format, uint32_t 
     view_info.subresourceRange.baseArrayLayer = 0;
     view_info.subresourceRange.layerCount = 1;
 
-    VkImageView image_view;
     if (vkCreateImageView(device_, &view_info, nullptr, &image_view) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture image view!");
     }
-
-    return image_view;
 }
 
 }

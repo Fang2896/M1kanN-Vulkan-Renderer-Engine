@@ -53,7 +53,6 @@ class M1kSwapChain {
     void init();
     void createSwapChain();
     void createImageViews();
-    void createColorResources();
     void createDepthResources();
     void createRenderPass();
     void createFramebuffers();
@@ -72,10 +71,6 @@ class M1kSwapChain {
 
     std::vector<VkFramebuffer> swap_chain_framebuffers_;
     VkRenderPass render_pass_;
-
-    std::vector<VkImage> color_images_;
-    std::vector<VkDeviceMemory> color_image_memorys_;
-    std::vector<VkImageView> color_image_views_;
 
     std::vector<VkImage> depth_images_;
     std::vector<VkDeviceMemory> depth_image_memorys_;

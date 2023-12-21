@@ -82,7 +82,9 @@ class M1kDevice {
     void transitionImageLayout(VkImage image, VkFormat format,
                                VkImageLayout old_layout, VkImageLayout new_layout,
                                uint32_t mip_level=1);
-    VkImageView createImageView(VkImage image, VkFormat format, uint32_t mip_level=1, VkImageAspectFlags aspectFlags=VK_IMAGE_ASPECT_COLOR_BIT);
+    void createImageView(VkImage image, VkImageView &image_view,
+                         VkFormat format, uint32_t mip_level=1,
+                         VkImageAspectFlags aspectFlags=VK_IMAGE_ASPECT_COLOR_BIT);
 
     VkPhysicalDeviceProperties properties;
 
@@ -121,10 +123,11 @@ class M1kDevice {
 #ifdef __MACH__
     const std::vector<const char *> device_extensions_ =
         {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-         "VK_KHR_portability_subset",
-         "VK_EXT_multisampled_render_to_single_sampled"};
+         "VK_KHR_portability_subset"};
 #else
-    const std::vector<const char *> device_extensions_ = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    const std::vector<const char *> device_extensions_ =
+        {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+         "VK_EXT_multisampled_render_to_single_sampled};
 #endif
 
     // tracer member variables
