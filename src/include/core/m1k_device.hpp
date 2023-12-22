@@ -82,7 +82,9 @@ class M1kDevice {
     void transitionImageLayout(VkImage image, VkFormat format,
                                VkImageLayout old_layout, VkImageLayout new_layout,
                                uint32_t mip_levels=1);
-    VkImageView createImageView(VkImage image, VkFormat format, uint32_t mip_levels = 1);
+    VkImageView createImageView(VkImage image, VkFormat format,
+                                uint32_t mip_levels = 1,
+                                VkImageAspectFlags aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT);
 
     VkPhysicalDeviceProperties properties;
 

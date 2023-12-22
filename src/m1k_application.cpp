@@ -202,7 +202,9 @@ void M1kApplication::initImGUI() {
     init_info.DescriptorPool = imgui_pool_->getPool();
     init_info.MinImageCount = 3;
     init_info.ImageCount = 3;
-    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+    // NOTE!!! if enable the MSAA， this MUST be the SAME as app!
+    init_info.MSAASamples = m1k_device_.maxMSAASampleCount();
 
     ImGui_ImplVulkan_Init(&init_info, m1k_renderer_.getSwapChainRenderPass());
 

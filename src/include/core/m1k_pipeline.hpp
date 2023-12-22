@@ -44,7 +44,7 @@ class M1kPipeline {
    public:
     M1kPipeline() = default;
     M1kPipeline(M1kDevice& device,
-                const PipelineConfigInfo& config_info,
+                PipelineConfigInfo& config_info,
                 const std::string& vert_filepath,
                 const std::string& frag_filepath);
 
@@ -61,7 +61,7 @@ class M1kPipeline {
    private:
     static std::vector<char> readFile(const std::string& filepath);
 
-    void createGraphicPipeline(const PipelineConfigInfo& config_info,
+    void createGraphicPipeline(PipelineConfigInfo& config_info,
                                const std::string& vert_filepath,
                                const std::string& frag_filepath);
 

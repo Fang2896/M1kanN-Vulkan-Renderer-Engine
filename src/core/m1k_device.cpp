@@ -143,6 +143,7 @@ void M1kDevice::pickPhysicalDevice() {
         if (isDeviceSuitable(device)) {
             physical_device_ = device;
             msaa_samples_ = getMaxUsableSampleCount();
+
             break;
         }
     }
@@ -173,6 +174,7 @@ void M1kDevice::createLogicalDevice() {
 
     VkPhysicalDeviceFeatures deviceFeatures = {};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
+    deviceFeatures.sampleRateShading = VK_TRUE;
 
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -239,15 +241,18 @@ VkSampleCountFlagBits M1kDevice::getMaxUsableSampleCount() {
     VkPhysicalDeviceProperties physical_device_properties;
     vkGetPhysicalDeviceProperties(physical_device_, &physical_device_properties);
 
-    VkSampleCountFlags counts = std::min(physical_device_properties.limits.framebufferColorSampleCounts, physical_device_properties.limits.framebufferDepthSampleCounts);
-    if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
-    if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
-    if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
-    if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
-    if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
-    if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+    VkSampleCountFlagBits result = VK_SAMPLE_COUNT_1_BIT;
 
-    return VK_SAMPLE_COUNT_1_BIT;
+    VkSampleCountFlags counts = std::min(physical_device_properties.limits.framebufferColorSampleCounts, physical_device_properties.limits.framebufferDepthSampleCounts);
+    if (counts & VK_SAMPLE_COUNT_64_BIT) { printf("MSAA Sample Count: 64"); result=VK_SAMPLE_COUNT_64_BIT; }
+    else if (counts & VK_SAMPLE_COUNT_32_BIT) { printf("MSAA Sample Count: 32"); result=VK_SAMPLE_COUNT_32_BIT; }
+    else if (counts & VK_SAMPLE_COUNT_16_BIT) { printf("MSAA Sample Count: 16"); result=VK_SAMPLE_COUNT_16_BIT; }
+    else if (counts & VK_SAMPLE_COUNT_8_BIT) { printf("MSAA Sample Count: 8"); result=VK_SAMPLE_COUNT_8_BIT; }
+    else if (counts & VK_SAMPLE_COUNT_4_BIT) { printf("MSAA Sample Count: 4"); result=VK_SAMPLE_COUNT_4_BIT; }
+    else if (counts & VK_SAMPLE_COUNT_2_BIT) { printf("MSAA Sample Count: 2"); result=VK_SAMPLE_COUNT_2_BIT; }
+    else if (counts & VK_SAMPLE_COUNT_1_BIT) { printf("MSAA Sample Count: 1"); result=VK_SAMPLE_COUNT_1_BIT; }
+    printf("\n");
+    return result;
 }
 
 void M1kDevice::populateDebugMessengerCreateInfo(
@@ -629,13 +634,15 @@ void M1kDevice::transitionImageLayout(VkImage image, VkFormat format,
     endSingleTimeCommands(command_buffer);
 }
 
-VkImageView M1kDevice::createImageView(VkImage image, VkFormat format, uint32_t mip_levels) {
+VkImageView M1kDevice::createImageView(VkImage image, VkFormat format,
+                                       uint32_t mip_levels, VkImageAspectFlags aspect_mask)
+{
     VkImageViewCreateInfo view_info = {};
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     view_info.image = image;
     view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
     view_info.format = format;
-    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    view_info.subresourceRange.aspectMask = aspect_mask;
     view_info.subresourceRange.baseMipLevel = 0;
     view_info.subresourceRange.levelCount = mip_levels;
     view_info.subresourceRange.baseArrayLayer = 0;
