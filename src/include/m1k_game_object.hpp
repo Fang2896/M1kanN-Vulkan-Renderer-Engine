@@ -58,6 +58,7 @@ class M1kGameObject {
 
     // optional pointer components
     std::shared_ptr<M1kModel> model{};
+
     std::unique_ptr<PointLightComponent> point_light = nullptr;
 
    private:

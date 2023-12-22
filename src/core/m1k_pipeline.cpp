@@ -14,9 +14,10 @@
 namespace m1k {
 
 M1kPipeline::M1kPipeline(M1kDevice& device,
-            const PipelineConfigInfo& config_info,
+            PipelineConfigInfo& config_info,
             const std::string& vert_filepath,
             const std::string& frag_filepath) : m1k_device_(device) {
+
           createGraphicPipeline(config_info, vert_filepath, frag_filepath);
 }
 
@@ -48,7 +49,7 @@ void M1kPipeline::bind(VkCommandBuffer command_buffer) {
 
 }
 
-void M1kPipeline::createGraphicPipeline(const PipelineConfigInfo& config_info,
+void M1kPipeline::createGraphicPipeline(PipelineConfigInfo& config_info,
                            const std::string& vert_filepath,
                            const std::string& frag_filepath) {
     assert(
@@ -104,7 +105,13 @@ void M1kPipeline::createGraphicPipeline(const PipelineConfigInfo& config_info,
     pipeline_info.pInputAssemblyState = &config_info.input_assembly_info;
     pipeline_info.pViewportState = &config_info.viewport_info;
     pipeline_info.pRasterizationState = &config_info.rasterization_info;
+
+    // set MSAA
+    config_info.multisample_info.rasterizationSamples = m1k_device_.maxMSAASampleCount();
+    config_info.multisample_info.sampleShadingEnable = VK_TRUE;
+    config_info.multisample_info.minSampleShading = 0.4f;
     pipeline_info.pMultisampleState = &config_info.multisample_info;
+
     pipeline_info.pColorBlendState = &config_info.color_blend_info;
     pipeline_info.pDepthStencilState = &config_info.depth_stencil_info;
     pipeline_info.pDynamicState = &config_info.dynamic_state_info;
@@ -164,7 +171,7 @@ void M1kPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& config_info) {
 
     config_info.multisample_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     config_info.multisample_info.sampleShadingEnable = VK_FALSE;
-    config_info.multisample_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    config_info.multisample_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;  // default setting
     config_info.multisample_info.minSampleShading = 1.0f;           // Optional
     config_info.multisample_info.pSampleMask = nullptr;             // Optional
     config_info.multisample_info.alphaToCoverageEnable = VK_FALSE;  // Optional

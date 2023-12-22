@@ -23,7 +23,8 @@ struct SimplePushConstantData {
 };
 
 SimpleRenderSystem::SimpleRenderSystem(M1kDevice &device, VkRenderPass render_pass, VkDescriptorSetLayout global_set_layout)
-    : m1k_device_(device) {
+    : m1k_device_(device)
+{
     createPipelineLayout(global_set_layout);
     createPipeline(render_pass);
 }

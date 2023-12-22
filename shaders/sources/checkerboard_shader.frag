@@ -12,6 +12,8 @@ layout (push_constant) uniform Push {
     mat4 normal_matrix;
 }push;
 
+layout(binding = 1) uniform sampler2D texSampler;
+
 struct PointLight{
     vec4 position;  // ignore w
     vec4 color; // w is intensity
@@ -61,8 +63,10 @@ void main() {
         specular_light += intensity * binn_term;
     }
 
-    vec3 checker_color = checkerboardPattern(fragUV, vec3(0.99), vec3(0.4), 10.0);
-    vec3 final_color = (diffuse_light + specular_light) * checker_color * fragColor;
-
-    outColor = vec4((diffuse_light + specular_light) * final_color, 1.0f);
+    // vec3 texture_color = checkerboardPattern(fragUV, vec3(0.99), vec3(0.4), 10.0);
+    vec3 texture_color = texture(texSampler, fragUV).xyz;
+    vec3 final_color = (diffuse_light + specular_light) * texture_color * fragColor;
+    outColor = vec4(final_color, 1.0f);
+    // test
+    // outColor = vec4(fragUV, 0.0, 1.0);
 }

@@ -51,15 +51,18 @@ class M1kDevice {
     VkCommandPool getCommandPool() { return command_pool_; }
     VkDevice device() { return device_; }
     VkSurfaceKHR surface() { return surface_; }
-    VkQueue graphicsQueue() { return graphicsQueue_; }
-    VkQueue presentQueue() { return presentQueue_; }
-
+    VkQueue graphicsQueue() { return graphics_queue_; }
+    VkQueue presentQueue() { return present_queue_; }
+    VkSampleCountFlagBits maxMSAASampleCount() { return msaa_samples_; }
 
     SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physical_device_); }
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     QueueFamilyIndices findPhysicalQueueFamilies() { return findQueueFamilies(physical_device_); }
     VkFormat findSupportedFormat(
         const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+
+    VkCommandBuffer beginSingleTimeCommands();
+    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
     // Buffer Helper Functions
     void createBuffer(
@@ -68,17 +71,20 @@ class M1kDevice {
         VkMemoryPropertyFlags properties,
         VkBuffer &buffer,
         VkDeviceMemory &bufferMemory);
-    VkCommandBuffer beginSingleTimeCommands();
-    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void copyBufferToImage(
         VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
-
     void createImageWithInfo(
         const VkImageCreateInfo &imageInfo,
         VkMemoryPropertyFlags properties,
         VkImage &image,
         VkDeviceMemory &imageMemory);
+    void transitionImageLayout(VkImage image, VkFormat format,
+                               VkImageLayout old_layout, VkImageLayout new_layout,
+                               uint32_t mip_levels=1);
+    VkImageView createImageView(VkImage image, VkFormat format,
+                                uint32_t mip_levels = 1,
+                                VkImageAspectFlags aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT);
 
     VkPhysicalDeviceProperties properties;
 
@@ -92,6 +98,7 @@ class M1kDevice {
 
     // helper functions
     bool isDeviceSuitable(VkPhysicalDevice device);
+    VkSampleCountFlagBits getMaxUsableSampleCount();
     std::vector<const char *> getRequiredExtensions();
     bool checkValidationLayerSupport();
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
@@ -108,11 +115,20 @@ class M1kDevice {
 
     VkDevice device_;
     VkSurfaceKHR surface_;
-    VkQueue graphicsQueue_;
-    VkQueue presentQueue_;
+    VkQueue graphics_queue_;
+    VkQueue present_queue_;
 
     const std::vector<const char *> validation_layers_ = {"VK_LAYER_KHRONOS_validation"};
+
+#ifdef __MACH__
+    const std::vector<const char *> device_extensions_ = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
+#elif
     const std::vector<const char *> device_extensions_ = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+#endif
+
+
+    // tracer member variables
+    VkSampleCountFlagBits msaa_samples_ = VK_SAMPLE_COUNT_1_BIT;
 };
 
 }
