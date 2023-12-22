@@ -73,6 +73,7 @@ void M1kApplication::run() {
             .build(global_descriptor_sets[i]);
     }
 
+
     // systems init
     SimpleRenderSystem simple_render_system{m1k_device_,
                                             m1k_renderer_.getSwapChainRenderPass(),

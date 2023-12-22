@@ -20,21 +20,23 @@ class M1kTexture {
 
 private:
     void createTextureImage(const std::string& path);
-    void createImage(uint32_t width, uint32_t height, uint32_t mip_level,
-                     VkFormat format, VkImageTiling tiling,
-                     VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
-                     VkImage& image, VkDeviceMemory& image_memory);
+    void createImage(uint32_t width, uint32_t height, uint32_t mip_levels,
+                     VkFormat format,
+                     VkImageTiling tiling, VkImageUsageFlags usage,
+                     VkMemoryPropertyFlags properties, VkImage& image,
+                     VkDeviceMemory& image_memory);
+    void generateMipmaps(VkImage image, VkFormat image_format,
+                         int32_t tex_width, int32_t tex_height, uint32_t mip_levels);
 
     void createTextureImageView();
     void createTextureSampler(VkFilter filter_mode,
                               VkSamplerAddressMode address_mode,
                               VkBorderColor board_color);
     void createDescriptorImageInfo();
-    void generateMipmaps(VkImage image, VkFormat image_format, uint32_t tex_width, uint32_t tex_height, uint32_t mip_level);
 
     M1kDevice &m1k_device_;
 
-    uint32_t mip_levels_{1};
+    uint32_t mip_levels_;
     VkImage m1k_texture_image_;
     VkDeviceMemory m1k_texture_image_memory_;
 

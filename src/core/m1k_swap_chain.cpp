@@ -39,7 +39,7 @@ void M1kSwapChain::init() {
 }
 
  M1kSwapChain::~ M1kSwapChain() {
-    for (auto& imageView : swap_chain_image_views_) {
+    for (auto imageView : swap_chain_image_views_) {
         vkDestroyImageView(device_.device(), imageView, nullptr);
     }
     swap_chain_image_views_.clear();
@@ -54,9 +54,8 @@ void M1kSwapChain::init() {
         vkDestroyImage(device_.device(), depth_images_[i], nullptr);
         vkFreeMemory(device_.device(), depth_image_memorys_[i], nullptr);
     }
-    depth_image_views_.clear();
 
-    for (auto& framebuffer : swap_chain_framebuffers_) {
+    for (auto framebuffer : swap_chain_framebuffers_) {
         vkDestroyFramebuffer(device_.device(), framebuffer, nullptr);
     }
 
@@ -198,31 +197,17 @@ void  M1kSwapChain::createSwapChain() {
     swap_chain_extent_ = extent;
 }
 
-void M1kSwapChain::createImageViews() {
+void  M1kSwapChain::createImageViews() {
     swap_chain_image_views_.resize(swap_chain_images_.size());
 
     for (size_t i = 0; i < swap_chain_images_.size(); i++) {
-        device_.createImageView(swap_chain_images_[i],
-                                    swap_chain_image_views_[i],
+        swap_chain_image_views_[i] =
+            device_.createImageView(swap_chain_images_[i],
                                     swap_chain_image_format_);
     }
 }
 
-void M1kSwapChain::createRenderPass() {
-    VkAttachmentDescription colorAttachment = {};
-    colorAttachment.format = getSwapChainImageFormat();
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-    VkAttachmentReference colorAttachmentRef = {};
-    colorAttachmentRef.attachment = 0;
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
+void  M1kSwapChain::createRenderPass() {
     VkAttachmentDescription depthAttachment{};
     depthAttachment.format = findDepthFormat();
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -236,6 +221,20 @@ void M1kSwapChain::createRenderPass() {
     VkAttachmentReference depthAttachmentRef{};
     depthAttachmentRef.attachment = 1;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentDescription colorAttachment = {};
+    colorAttachment.format = getSwapChainImageFormat();
+    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+    VkAttachmentReference colorAttachmentRef = {};
+    colorAttachmentRef.attachment = 0;
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkSubpassDescription subpass = {};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -254,8 +253,7 @@ void M1kSwapChain::createRenderPass() {
     dependency.dstAccessMask =
         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-    std::array<VkAttachmentDescription, 2> attachments =
-        {colorAttachment, depthAttachment};
+    std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -270,13 +268,10 @@ void M1kSwapChain::createRenderPass() {
     }
 }
 
-// if ENABLE the MSAA, CAREFUL the ORDER!!!
-// render pass's attachment's oder MUST match the framebuffer!!!
 void  M1kSwapChain::createFramebuffers() {
     swap_chain_framebuffers_.resize(imageCount());
     for (size_t i = 0; i < imageCount(); i++) {
-        std::array<VkImageView, 2> attachments =
-            {swap_chain_image_views_[i] ,depth_image_views_[i]};
+        std::array<VkImageView, 2> attachments = {swap_chain_image_views_[i], depth_image_views_[i]};
 
         VkExtent2D swapChainExtent = getSwapChainExtent();
         VkFramebufferCreateInfo framebufferInfo = {};
@@ -329,11 +324,6 @@ void  M1kSwapChain::createDepthResources() {
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
             depth_images_[i],
             depth_image_memorys_[i]);
-
-        device_.createImageView(
-                depth_images_[i], depth_image_views_[i],
-                depthFormat,
-                1, VK_IMAGE_ASPECT_DEPTH_BIT);
 
         VkImageViewCreateInfo viewInfo{};
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

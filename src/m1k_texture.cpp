@@ -8,8 +8,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-// std
+//std
 #include <cmath>
+
 
 namespace m1k {
 
@@ -23,10 +24,11 @@ M1kTexture::M1kTexture(M1kDevice& device, const std::string& path)
 }
 
 M1kTexture::~M1kTexture() {
-    vkDestroyImageView(m1k_device_.device(), m1k_texture_image_view_, nullptr);
     vkDestroyImage(m1k_device_.device(), m1k_texture_image_, nullptr);
     vkFreeMemory(m1k_device_.device(), m1k_texture_image_memory_, nullptr);
+
     vkDestroySampler(m1k_device_.device(), m1k_texture_sampler_, nullptr);
+    vkDestroyImageView(m1k_device_.device(), m1k_texture_image_view_, nullptr);
 }
 
 VkDescriptorImageInfo& M1kTexture::getDescriptorImageInfo() {
@@ -76,89 +78,26 @@ void M1kTexture::createTextureImage(const std::string& path) {
                                   static_cast<uint32_t>(tex_width),
                                   static_cast<uint32_t>(tex_height),
                                   1);
-    //transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
+//    m1k_device_.transitionImageLayout(m1k_texture_image_, VK_FORMAT_R8G8B8A8_UNORM,
+//                                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+//                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+//                                      mip_levels_);
 
     vkDestroyBuffer(m1k_device_.device(), staging_buffer, nullptr);
     vkFreeMemory(m1k_device_.device(), staging_buffer_memory, nullptr);
 
-    generateMipmaps(m1k_texture_image_, VK_FORMAT_R8G8B8A8_SRGB, tex_width, tex_height, mip_levels_);
+    generateMipmaps(m1k_texture_image_, VK_FORMAT_R8G8B8A8_SRGB,
+                    tex_width, tex_height, mip_levels_);
 }
 
-void M1kTexture::createImage(uint32_t width, uint32_t height, uint32_t mip_level,
-                             VkFormat format, VkImageTiling tiling,
-                             VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
-                             VkImage& image, VkDeviceMemory& image_memory) {
-
-    VkImageCreateInfo image_info = {};
-    image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image_info.imageType = VK_IMAGE_TYPE_2D;
-    image_info.extent.width = width;
-    image_info.extent.height = height;
-    image_info.extent.depth = 1;
-    image_info.mipLevels = mip_level;
-    image_info.arrayLayers = 1;
-    image_info.format = format;
-    image_info.tiling = tiling;
-    image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    image_info.usage = usage;
-    image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    image_info.samples = VK_SAMPLE_COUNT_1_BIT;
-    image_info.flags = 0; // Optional
-    m1k_device_.createImageWithInfo(image_info, properties,
-                                    image, image_memory);
-}
-
-
-void M1kTexture::createTextureImageView() {
-     m1k_device_.createImageView(m1k_texture_image_, m1k_texture_image_view_,
-                                VK_FORMAT_R8G8B8A8_UNORM,
-                                mip_levels_);
-}
-
-void M1kTexture::createTextureSampler(VkFilter filter_mode,
-                                      VkSamplerAddressMode address_mode,
-                                      VkBorderColor board_color) {
-
-    VkSamplerCreateInfo sampler_info = {};
-    sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    sampler_info.magFilter = filter_mode;
-    sampler_info.minFilter = filter_mode;
-
-    sampler_info.addressModeU = address_mode;
-    sampler_info.addressModeV = address_mode;
-    sampler_info.addressModeW = address_mode;
-
-    sampler_info.anisotropyEnable = VK_TRUE;
-    sampler_info.maxAnisotropy = 16;
-
-    sampler_info.borderColor = board_color;
-    sampler_info.unnormalizedCoordinates = VK_FALSE;
-    sampler_info.compareEnable = VK_FALSE;
-    sampler_info.compareOp = VK_COMPARE_OP_ALWAYS;  // shadow?
-
-    sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    sampler_info.mipLodBias = 0.0f;
-    sampler_info.minLod = 0.0f;
-    sampler_info.maxLod = static_cast<float>(mip_levels_);
-    sampler_info.mipLodBias = 0.0f;
-
-    if (vkCreateSampler(m1k_device_.device(), &sampler_info, nullptr, &m1k_texture_sampler_) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create texture sampler!");
-    }
-}
-
-void M1kTexture::createDescriptorImageInfo() {
-    m1k_image_info_.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    m1k_image_info_.imageView = m1k_texture_image_view_;
-    m1k_image_info_.sampler = m1k_texture_sampler_;
-}
-
-void M1kTexture::generateMipmaps(VkImage image, VkFormat image_format, uint32_t tex_width, uint32_t tex_height, uint32_t mip_levels) {
+void M1kTexture::generateMipmaps(VkImage image, VkFormat image_format,
+                     int32_t tex_width, int32_t tex_height, uint32_t mip_levels) {
     // Check if image format supports linear blitting
-    VkFormatProperties format_properties;
-    vkGetPhysicalDeviceFormatProperties(m1k_device_.getPhyDevice(), image_format, &format_properties);
+    VkFormatProperties formatProperties;
+    vkGetPhysicalDeviceFormatProperties(m1k_device_.getPhyDevice(),
+                                        image_format, &formatProperties);
 
-    if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
+    if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
         throw std::runtime_error("texture image format does not support linear blitting!");
     }
 
@@ -186,8 +125,8 @@ void M1kTexture::generateMipmaps(VkImage image, VkFormat image_format, uint32_t 
 
         vkCmdPipelineBarrier(commandBuffer,
                              VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-                             0, nullptr,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             0,0, nullptr,
                              0, nullptr,
                              1, &barrier);
 
@@ -199,7 +138,8 @@ void M1kTexture::generateMipmaps(VkImage image, VkFormat image_format, uint32_t 
         blit.srcSubresource.baseArrayLayer = 0;
         blit.srcSubresource.layerCount = 1;
         blit.dstOffsets[0] = {0, 0, 0};
-        blit.dstOffsets[1] = { mip_width > 1 ? mip_width / 2 : 1, mip_height > 1 ? mip_height / 2 : 1, 1 };
+        blit.dstOffsets[1] = {mip_width > 1 ? mip_width / 2 : 1,
+                              mip_height > 1 ? mip_height / 2 : 1, 1 };
         blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         blit.dstSubresource.mipLevel = i;
         blit.dstSubresource.baseArrayLayer = 0;
@@ -217,13 +157,16 @@ void M1kTexture::generateMipmaps(VkImage image, VkFormat image_format, uint32_t 
         barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
         vkCmdPipelineBarrier(commandBuffer,
-                             VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-                             0, nullptr,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                             0,0, nullptr,
                              0, nullptr,
                              1, &barrier);
 
-        if (mip_width > 1) mip_width /= 2;
-        if (mip_height > 1) mip_height /= 2;
+        if (mip_width > 1)
+            mip_width /= 2;
+        if (mip_height > 1)
+            mip_height /= 2;
     }
 
     barrier.subresourceRange.baseMipLevel = mip_levels - 1;
@@ -240,6 +183,76 @@ void M1kTexture::generateMipmaps(VkImage image, VkFormat image_format, uint32_t 
                          1, &barrier);
 
     m1k_device_.endSingleTimeCommands(commandBuffer);
+}
+
+void M1kTexture::createImage(uint32_t width, uint32_t height, uint32_t mip_levels,
+                             VkFormat format,
+                             VkImageTiling tiling, VkImageUsageFlags usage,
+                             VkMemoryPropertyFlags properties, VkImage& image,
+                             VkDeviceMemory& image_memory) {
+
+    VkImageCreateInfo image_info = {};
+    image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    image_info.imageType = VK_IMAGE_TYPE_2D;
+    image_info.extent.width = width;
+    image_info.extent.height = height;
+    image_info.extent.depth = 1;
+    image_info.mipLevels = mip_levels;
+    image_info.arrayLayers = 1;
+    image_info.format = format;
+    image_info.tiling = tiling;
+    image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_info.usage = usage;
+    image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_info.flags = 0; // Optional
+    m1k_device_.createImageWithInfo(image_info, properties,
+                                    image, image_memory);
+}
+
+
+void M1kTexture::createTextureImageView() {
+    m1k_texture_image_view_ = m1k_device_.createImageView(m1k_texture_image_,
+                                                          VK_FORMAT_R8G8B8A8_UNORM,
+                                                          mip_levels_);
+}
+
+void M1kTexture::createTextureSampler(VkFilter filter_mode,
+                                      VkSamplerAddressMode address_mode,
+                                      VkBorderColor board_color) {
+
+    VkSamplerCreateInfo sampler_info = {};
+    sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    sampler_info.magFilter = filter_mode;
+    sampler_info.minFilter = filter_mode;
+
+    sampler_info.addressModeU = address_mode;
+    sampler_info.addressModeV = address_mode;
+    sampler_info.addressModeW = address_mode;
+
+    sampler_info.anisotropyEnable = VK_TRUE;
+    sampler_info.maxAnisotropy = 16;
+
+    sampler_info.borderColor = board_color;
+    sampler_info.unnormalizedCoordinates = VK_FALSE;
+    sampler_info.compareEnable = VK_FALSE;
+    sampler_info.compareOp = VK_COMPARE_OP_ALWAYS;  // shadow?
+
+    sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    sampler_info.mipLodBias = 0.0f;
+    sampler_info.minLod = 0;
+    sampler_info.maxLod = static_cast<float>(mip_levels_);
+
+    if (vkCreateSampler(m1k_device_.device(), &sampler_info, nullptr, &m1k_texture_sampler_) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create texture sampler!");
+    }
+}
+
+
+void M1kTexture::createDescriptorImageInfo() {
+    m1k_image_info_.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    m1k_image_info_.imageView = m1k_texture_image_view_;
+    m1k_image_info_.sampler = m1k_texture_sampler_;
 }
 
 }

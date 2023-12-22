@@ -75,7 +75,6 @@ class M1kSwapChain {
     std::vector<VkImage> depth_images_;
     std::vector<VkDeviceMemory> depth_image_memorys_;
     std::vector<VkImageView> depth_image_views_;
-
     std::vector<VkImage> swap_chain_images_;
     std::vector<VkImageView> swap_chain_image_views_;
 
