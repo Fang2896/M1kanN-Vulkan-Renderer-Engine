@@ -119,7 +119,13 @@ class M1kDevice {
     VkQueue present_queue_;
 
     const std::vector<const char *> validation_layers_ = {"VK_LAYER_KHRONOS_validation"};
+
+#ifdef __MACH__
+    const std::vector<const char *> device_extensions_ = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
+#elif
     const std::vector<const char *> device_extensions_ = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+#endif
+
 
     // tracer member variables
     VkSampleCountFlagBits msaa_samples_ = VK_SAMPLE_COUNT_1_BIT;
