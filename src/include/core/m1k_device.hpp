@@ -53,6 +53,7 @@ class M1kDevice {
     VkSurfaceKHR surface() { return surface_; }
     VkQueue graphicsQueue() { return graphics_queue_; }
     VkQueue presentQueue() { return present_queue_; }
+    VkSampleCountFlagBits maxMSAASampleCount() { return msaa_samples_; }
 
     SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physical_device_); }
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
