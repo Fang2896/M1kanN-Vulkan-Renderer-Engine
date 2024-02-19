@@ -97,7 +97,7 @@ IMGUI_IMPL_API bool         ImGui_ImplVulkan_LoadFunctions(PFN_vkVoidFunction(*l
 // Those functions only exist because:
 //   1) they facilitate the readability and maintenance of the multiple main.cpp examples files.
 //   2) the multi-viewport / platform window implementation needs them internally.
-// Generally we avoid exposing any kind of superfluous high-level helpers in the bindings,
+// Generally we avoid exposing any kind of superfluous high-level helpers in the bindings_,
 // but it is too much code to duplicate everywhere so we exceptionally expose them.
 //
 // Your engine/app will likely _already_ have code to setup all that stuff (swap chain, render pass, frame buffers, etc.).

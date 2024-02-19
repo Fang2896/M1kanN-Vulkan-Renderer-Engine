@@ -15,7 +15,6 @@
 #include "imgui_impl_vulkan.h"
 
 // std
-#include <stdexcept>
 #include <array>
 #include <iostream>
 #include <chrono>
@@ -39,9 +38,11 @@ M1kApplication::M1kApplication() {
     loadGameObjects();
 }
 
+
 M1kApplication::~M1kApplication() {
     ImGui_ImplVulkan_Shutdown();
 }
+
 
 void M1kApplication::run() {
     std::vector<std::unique_ptr<M1kBuffer>> ubo_buffers(M1kSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -62,7 +63,7 @@ void M1kApplication::run() {
 
     // for all UBOs of each frame and textures
     M1kTexture test_texture{m1k_device_, "../assets/textures/default_texture.png"};
-    auto& test_texture_image_info = test_texture.getDescriptorImageInfo();
+    auto& test_texture_image_info = test_texture.getDescriptorImageInfo();  // VkDescriptorImageinfo
     std::vector<VkDescriptorSet> global_descriptor_sets(M1kSwapChain::MAX_FRAMES_IN_FLIGHT);
 
     for (int i = 0; i < M1kSwapChain::MAX_FRAMES_IN_FLIGHT; ++i) {
@@ -73,7 +74,8 @@ void M1kApplication::run() {
             .build(global_descriptor_sets[i]);
     }
 
-
+    // 对于不同的物体，我们可以有不同的系统（其实就是pipeline）。
+    // 同样，输入的RenderPass也可以不同，其实这里就是最好扩展的地方。
     // systems init
     SimpleRenderSystem simple_render_system{m1k_device_,
                                             m1k_renderer_.getSwapChainRenderPass(),
@@ -135,7 +137,6 @@ void M1kApplication::run() {
             // init Imgui frame
             ImGui_ImplVulkan_NewFrame();
             ImGui::NewFrame();
-
             // point light control
             ImGui::Begin("Point Light Control");
             float current_intensity = point_light_system.getOnePointLightIntensity(frame_info);
@@ -163,8 +164,8 @@ void M1kApplication::run() {
 }
 
 void M1kApplication::initImGUI() {
-    //1: create descriptor pool for IMGUI
-    // the size of the pool is very oversize, but it's copied from imgui demo itself.
+    //1: create descriptor pool_ for IMGUI
+    // the size of the pool_ is very oversize, but it's copied from imgui demo itself.
     imgui_pool_ =
         M1kDescriptorPool::Builder(m1k_device_)
             .setMaxSets(M1kSwapChain::MAX_FRAMES_IN_FLIGHT * 2)
@@ -217,6 +218,7 @@ void M1kApplication::initImGUI() {
     //clear font textures from cpu data
     ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
+
 
 void M1kApplication::loadGameObjects() {
     // vase objects:

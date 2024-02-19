@@ -5,7 +5,7 @@
 #pragma once
 
 
-#include "ui/m1k_window.hpp"
+#include "../ui/m1k_window.hpp"
 #include "m1k_device.hpp"
 #include "m1k_swap_chain.hpp"
 

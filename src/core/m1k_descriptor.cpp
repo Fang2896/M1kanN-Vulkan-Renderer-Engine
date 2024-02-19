@@ -2,7 +2,7 @@
 // Created by fangl on 2023/12/2.
 //
 
-#include "core/m1k_descriptor.hpp"
+#include "m1k_descriptor.hpp"
 
 // std
 #include <cassert>
@@ -19,7 +19,7 @@ M1kDescriptorSetLayout::Builder &M1kDescriptorSetLayout::Builder::addBinding(
     VkShaderStageFlags stage_flags,
     uint32_t count)
 {
-    assert(bindings.count(binding) == 0 && "Binding already in use");
+    assert(bindings_.count(binding) == 0 && "Binding already in use");
     VkDescriptorSetLayoutBinding layout_binding{};
     layout_binding.binding = binding;
     layout_binding.descriptorCount = count;
@@ -27,12 +27,12 @@ M1kDescriptorSetLayout::Builder &M1kDescriptorSetLayout::Builder::addBinding(
     layout_binding.descriptorType = descriptor_type;
     layout_binding.pImmutableSamplers = nullptr;
     layout_binding.stageFlags = stage_flags;
-    bindings[binding] = layout_binding;
+    bindings_[binding] = layout_binding;
     return *this;
 }
 
 std::unique_ptr<M1kDescriptorSetLayout> M1kDescriptorSetLayout::Builder::build() const {
-    return std::make_unique<M1kDescriptorSetLayout>(m1k_device_, bindings);
+    return std::make_unique<M1kDescriptorSetLayout>(m1k_device_, bindings_);
 }
 
 
@@ -108,7 +108,7 @@ M1kDescriptorPool::M1kDescriptorPool(
 
     if (vkCreateDescriptorPool(m1k_device.device(), &descriptor_pool_info, nullptr, &descriptor_pool_) !=
         VK_SUCCESS) {
-        throw std::runtime_error("failed to create descriptor pool!");
+        throw std::runtime_error("failed to create descriptor pool_!");
     }
 }
 
@@ -125,7 +125,7 @@ bool M1kDescriptorPool::allocateDescriptor(
     alloc_info.descriptorSetCount = 1;
 
     // Might want to create a "DescriptorPoolManager" class that handles this case, and builds
-    // a new pool whenever an old pool fills up. But this is beyond our current scope
+    // a new pool_ whenever an old pool_ fills up. But this is beyond our current scope
     if (vkAllocateDescriptorSets(m1k_device_.device(), &alloc_info, &descriptor) != VK_SUCCESS) {
         return false;
     }
@@ -148,7 +148,7 @@ void M1kDescriptorPool::resetPool() {
 // *************** Descriptor Writer *********************
 
 M1kDescriptorWriter::M1kDescriptorWriter(M1kDescriptorSetLayout &set_layout, M1kDescriptorPool &pool)
-    : set_layout_{set_layout}, pool{pool} {}
+    : set_layout_{set_layout}, pool_{pool} {}
 
 M1kDescriptorWriter &M1kDescriptorWriter::writeBuffer(
     uint32_t binding, VkDescriptorBufferInfo *buffer_info) {
@@ -167,7 +167,7 @@ M1kDescriptorWriter &M1kDescriptorWriter::writeBuffer(
     write.pBufferInfo = buffer_info;
     write.descriptorCount = 1;
 
-    writes.push_back(write);
+    writes_.push_back(write);
     return *this;
 }
 
@@ -188,12 +188,13 @@ M1kDescriptorWriter &M1kDescriptorWriter::writeImage(
     write.pImageInfo = image_info;
     write.descriptorCount = 1;
 
-    writes.push_back(write);
+    writes_.push_back(write);
     return *this;
 }
 
 bool M1kDescriptorWriter::build(VkDescriptorSet &set) {
-    bool success = pool.allocateDescriptor(set_layout_.getDescriptorSetLayout(), set);
+    bool success =
+        pool_.allocateDescriptor(set_layout_.getDescriptorSetLayout(), set);
     if (!success) {
         return false;
     }
@@ -202,10 +203,11 @@ bool M1kDescriptorWriter::build(VkDescriptorSet &set) {
 }
 
 void M1kDescriptorWriter::overwrite(VkDescriptorSet &set) {
-    for (auto &write : writes) {
+    for (auto &write : writes_) {
         write.dstSet = set;
     }
-    vkUpdateDescriptorSets(pool.m1k_device_.device(), writes.size(), writes.data(), 0, nullptr);
+    vkUpdateDescriptorSets(pool_.m1k_device_.device(), writes_.size(),
+                           writes_.data(), 0, nullptr);
 }
 
 }

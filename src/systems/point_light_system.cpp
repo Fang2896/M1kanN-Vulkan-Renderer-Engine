@@ -2,7 +2,7 @@
 // Created by fangl on 2023/12/2.
 //
 
-#include "systems/point_light_system.hpp"
+#include "point_light_system.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

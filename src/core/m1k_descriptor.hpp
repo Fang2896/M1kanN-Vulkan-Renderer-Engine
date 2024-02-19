@@ -29,7 +29,7 @@ public:
 
     private:
         M1kDevice &m1k_device_;
-        std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings{};
+        std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings_{};
     };
 
     M1kDescriptorSetLayout(
@@ -103,8 +103,8 @@ public:
 
 private:
     M1kDescriptorSetLayout &set_layout_;
-    M1kDescriptorPool &pool;
-    std::vector<VkWriteDescriptorSet> writes;
+    M1kDescriptorPool &pool_;
+    std::vector<VkWriteDescriptorSet> writes_;
 };
 
 

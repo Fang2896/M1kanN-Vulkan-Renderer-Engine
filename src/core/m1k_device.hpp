@@ -1,15 +1,16 @@
-//
+﻿//
 // Created by fangl on 2023/11/10.
 //
 
 #pragma once
 
 
-#include "ui/m1k_window.hpp"
+#include "../ui/m1k_window.hpp"
 
 // std lib headers
 #include <string>
 #include <vector>
+
 
 namespace m1k {
 
@@ -122,7 +123,7 @@ class M1kDevice {
 
 #ifdef __MACH__
     const std::vector<const char *> device_extensions_ = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
-#elif
+#else
     const std::vector<const char *> device_extensions_ = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 #endif
 

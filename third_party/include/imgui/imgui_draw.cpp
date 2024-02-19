@@ -781,7 +781,7 @@ void ImDrawList::AddPolyline(const ImVec2* points, const int points_count, ImU32
             }
 
             // Generate the indices to form a number of triangles for each line segment, and the vertices for the line edges
-            // This takes points n and n+1 and writes into n+1, with the first point in a closed line being generated from the final one (as n+1 wraps)
+            // This takes points n and n+1 and writes_ into n+1, with the first point in a closed line being generated from the final one (as n+1 wraps)
             // FIXME-OPT: Merge the different loops, possibly remove the temporary buffer.
             unsigned int idx1 = _VtxCurrentIdx; // Vertex index for start of line segment
             for (int i1 = 0; i1 < count; i1++) // i1 is the first point of the line segment
@@ -877,7 +877,7 @@ void ImDrawList::AddPolyline(const ImVec2* points, const int points_count, ImU32
             }
 
             // Generate the indices to form a number of triangles for each line segment, and the vertices for the line edges
-            // This takes points n and n+1 and writes into n+1, with the first point in a closed line being generated from the final one (as n+1 wraps)
+            // This takes points n and n+1 and writes_ into n+1, with the first point in a closed line being generated from the final one (as n+1 wraps)
             // FIXME-OPT: Merge the different loops, possibly remove the temporary buffer.
             unsigned int idx1 = _VtxCurrentIdx; // Vertex index for start of line segment
             for (int i1 = 0; i1 < count; i1++) // i1 is the first point of the line segment

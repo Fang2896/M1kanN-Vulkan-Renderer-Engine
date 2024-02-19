@@ -2,7 +2,7 @@
 // Created by fangl on 2023/11/10.
 //
 
-#include "ui/m1k_window.hpp"
+#include "m1k_window.hpp"
 
 // std
 #include <stdexcept>

@@ -2,7 +2,7 @@
 // Created by fangl on 2023/11/10.
 //
 
-#include "core/m1k_device.hpp"
+#include "m1k_device.hpp"
 
 // std headers
 #include <cstring>
@@ -213,7 +213,7 @@ void M1kDevice::createCommandPool() {
         VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
     if (vkCreateCommandPool(device_, &poolInfo, nullptr, &command_pool_) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create command pool!");
+        throw std::runtime_error("failed to create command pool_!");
     }
 }
 

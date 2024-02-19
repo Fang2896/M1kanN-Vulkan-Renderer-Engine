@@ -816,7 +816,7 @@ typedef struct stbtt_kerningentry
 STBTT_DEF int  stbtt_GetKerningTableLength(const stbtt_fontinfo *info);
 STBTT_DEF int  stbtt_GetKerningTable(const stbtt_fontinfo *info, stbtt_kerningentry* table, int table_length);
 // Retrieves a complete list of all of the kerning pairs provided by the font
-// stbtt_GetKerningTable never writes more than table_length entries and returns how many entries it did write.
+// stbtt_GetKerningTable never writes_ more than table_length entries and returns how many entries it did write.
 // The table will be sorted by (a.glyph1 == b.glyph1)?(a.glyph2 < b.glyph2):(a.glyph1 < b.glyph1)
 
 //////////////////////////////////////////////////////////////////////////////

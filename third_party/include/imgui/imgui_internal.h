@@ -668,9 +668,9 @@ struct ImPool
     void        Remove(ImGuiID key, ImPoolIdx idx)  { Buf[idx].~T(); *(int*)&Buf[idx] = FreeIdx; FreeIdx = idx; Map.SetInt(key, -1); AliveCount--; }
     void        Reserve(int capacity)               { Buf.reserve(capacity); Map.Data.reserve(capacity); }
 
-    // To iterate a ImPool: for (int n = 0; n < pool.GetMapSize(); n++) if (T* t = pool.TryGetMapData(n)) { ... }
-    // Can be avoided if you know .Remove() has never been called on the pool, or AliveCount == GetMapSize()
-    int         GetAliveCount() const               { return AliveCount; }      // Number of active/alive items in the pool (for display purpose)
+    // To iterate a ImPool: for (int n = 0; n < pool_.GetMapSize(); n++) if (T* t = pool_.TryGetMapData(n)) { ... }
+    // Can be avoided if you know .Remove() has never been called on the pool_, or AliveCount == GetMapSize()
+    int         GetAliveCount() const               { return AliveCount; }      // Number of active/alive items in the pool_ (for display purpose)
     int         GetBufSize() const                  { return Buf.Size; }
     int         GetMapSize() const                  { return Map.Data.Size; }   // It is the map we need iterate to find valid items, since we don't have "alive" storage anywhere
     T*          TryGetMapData(ImPoolIdx n)          { int idx = Map.Data[n].val_i; if (idx == -1) return NULL; return GetByIndex(idx); }
@@ -1246,8 +1246,8 @@ struct ImGuiShrinkWidthItem
 
 struct ImGuiPtrOrIndex
 {
-    void*       Ptr;            // Either field can be set, not both. e.g. Dock node tab bars are loose while BeginTabBar() ones are in a pool.
-    int         Index;          // Usually index in a main pool.
+    void*       Ptr;            // Either field can be set, not both. e.g. Dock node tab bars are loose while BeginTabBar() ones are in a pool_.
+    int         Index;          // Usually index in a main pool_.
 
     ImGuiPtrOrIndex(void* ptr)  { Ptr = ptr; Index = -1; }
     ImGuiPtrOrIndex(int index)  { Ptr = NULL; Index = index; }
@@ -2712,7 +2712,7 @@ struct IMGUI_API ImGuiTable
 // sizeof() ~ 112 bytes.
 struct IMGUI_API ImGuiTableTempData
 {
-    int                         TableIndex;                 // Index in g.Tables.Buf[] pool
+    int                         TableIndex;                 // Index in g.Tables.Buf[] pool_
     float                       LastTimeActive;             // Last timestamp this structure was used
 
     ImVec2                      UserOuterSize;              // outer_size.x passed to BeginTable()

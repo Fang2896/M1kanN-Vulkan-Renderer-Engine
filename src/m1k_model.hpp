@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "core/m1k_device.hpp"
 #include "core/m1k_buffer.hpp"
+#include "core/m1k_device.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

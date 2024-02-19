@@ -2,8 +2,7 @@
 // Created by fangl on 2023/11/12.
 //
 
-#include "core/m1k_swap_chain.hpp"
-
+#include "m1k_swap_chain.hpp"
 
 // std
 #include <array>
@@ -260,6 +259,8 @@ void  M1kSwapChain::createRenderPass() {
     subpass.pDepthStencilAttachment = &depthAttachmentRef;
     subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
+    // 确保了在渲染通道的第一个子通道开始执行前，
+    // 任何外部对颜色附件和深度/模板附件的访问都已经完成
     VkSubpassDependency dependency = {};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.srcAccessMask = 0;

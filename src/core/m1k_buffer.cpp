@@ -9,7 +9,7 @@
  * https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanBuffer.h
  */
 
-#include "core/m1k_buffer.hpp"
+#include "m1k_buffer.hpp"
 
 // std
 #include <cassert>
@@ -84,7 +84,7 @@ void M1kBuffer::unmap() {
 }
 
 /**
- * Copies the specified data to the mapped_ buffer_. Default value writes whole buffer_ range
+ * Copies the specified data to the mapped_ buffer_. Default value writes_ whole buffer_ range
  *
  * @param data Pointer to the data to copy
  * @param size (Optional) Size of the data to copy. Pass VK_WHOLE_SIZE to flush the complete buffer_

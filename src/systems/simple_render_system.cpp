@@ -2,7 +2,7 @@
 // Created by fangl on 2023/11/26.
 //
 
-#include "systems/simple_render_system.hpp"
+#include "simple_render_system.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

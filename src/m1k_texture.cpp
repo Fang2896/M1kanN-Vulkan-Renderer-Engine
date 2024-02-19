@@ -78,6 +78,7 @@ void M1kTexture::createTextureImage(const std::string& path) {
                                   static_cast<uint32_t>(tex_width),
                                   static_cast<uint32_t>(tex_height),
                                   1);
+    // If we generate mipmap, we DO NOT need this!
 //    m1k_device_.transitionImageLayout(m1k_texture_image_, VK_FORMAT_R8G8B8A8_UNORM,
 //                                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 //                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,

@@ -2,8 +2,8 @@
 // Created by fangl on 2023/11/10.
 //
 
-#include "core/m1k_pipeline.hpp"
-#include "m1k_model.hpp"
+#include "m1k_pipeline.hpp"
+#include "../m1k_model.hpp"
 
 // std
 #include <fstream>
@@ -18,7 +18,7 @@ M1kPipeline::M1kPipeline(M1kDevice& device,
             const std::string& vert_filepath,
             const std::string& frag_filepath) : m1k_device_(device) {
 
-          createGraphicPipeline(config_info, vert_filepath, frag_filepath);
+      createGraphicPipeline(config_info, vert_filepath, frag_filepath);
 }
 
 M1kPipeline::~M1kPipeline() {
