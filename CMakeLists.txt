@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.23)
-project(M1kanN_Vulkan_Engine_Project)
+project(M1kanN_Vulkan_Engine)
 
 set(CMAKE_CXX_STANDARD 17)
 
 set(MY_ENGINE_NAME M1kanN_Vulkan_Engine)
-add_executable(${MY_ENGINE_NAME} src/m1k_texture.hpp src/m1k_texture.cpp)
+add_executable(${MY_ENGINE_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp )
+
 # =========== INCLUDE ============ #
 find_package(Vulkan REQUIRED)
 target_include_directories(${MY_ENGINE_NAME} PRIVATE

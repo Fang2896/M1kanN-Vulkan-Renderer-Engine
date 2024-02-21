@@ -5,33 +5,9 @@ This little engine is used to learn **Vulkan** and reproduce some CG algorithms.
 
 
 ## TODO
-
-* **Rendering Features:**
-  * [ ] Texture manager system
-  * [ ] Skybox
-  * [ ] Refraction, Reflection shader
-  * [ ] Shadow
-  * [ ] Blooming
-  * [ ] Defer shading
-  * [ ] PBR
-  * [ ] IBL skybox
-  * [ ] Ray tracing in Vulkan
-  * [ ] Some other algorithms in 《Real-Time Rendering 4th》 or 《Ray Tracing》
-* Geometry Features:
-  * [ ] Mesh simplification/ densification
-  * [ ] Laplace deformation
-  * [ ] Some other algorithms in 《Polygon Mesh Processing》......
-
-* Physical Simulation Features:
-  * [ ] Integrate Mujoco or something else physical engine.
-  * [ ] Some other algorithms in 《GAMES102》
-
-* **UI Options:** (just for showcase, NO NEED to be comprehensive!)
-  * [ ] Line mode option
-  * [ ] Point lights add / delete / attributes configurations
-  * [ ] Direct light attributes configurations
-
-
+- Basic Functions
+  `viewer.data`: store the viewer data and other options to handle some showcases (i.e. lines, points, label, etc.)
+  `viewer.data.set_data(V, F)` etc functions to set mesh, set shaders.
 
 
 
