@@ -20,11 +20,12 @@ struct PointLight{
     vec4 color; // w is intensity
 };
 
-layout (set = 0, binding = 0) uniform GlobalUbo {
+layout (std140, set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection_matrix;
     mat4 view_matrix;
     mat4 inverse_view_matrix;
     vec4 ambient_light_color;
+    vec4 direct_light;
     PointLight point_lights[10];    // can apply Specialization Constants
     int num_lights;
 } ubo;

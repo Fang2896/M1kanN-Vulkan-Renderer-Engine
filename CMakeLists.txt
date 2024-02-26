@@ -4,16 +4,21 @@ project(M1kanN_Vulkan_Engine)
 set(CMAKE_CXX_STANDARD 17)
 
 set(MY_ENGINE_NAME M1kanN_Vulkan_Engine)
-add_executable(${MY_ENGINE_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp )
+add_executable(${MY_ENGINE_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp
+        src/systems/pbr_render_system.cpp)
 
 # =========== INCLUDE ============ #
 find_package(Vulkan REQUIRED)
 target_include_directories(${MY_ENGINE_NAME} PRIVATE
         ${Vulkan_INCLUDE_DIR}
         ${Vulkan_INCLUDE_DIR}/../Third-Party/Include
+
+        third_party/include
         third_party/include/stb
         third_party/include/obj_loader
         third_party/include/imgui
+        third_party/include/ImGuiFileDialog
+        third_party/include/dirent
         )
 
 if (WIN32)
@@ -34,6 +39,7 @@ target_sources(${MY_ENGINE_NAME} PRIVATE
         third_party/include/imgui/imgui_tables.cpp
         third_party/include/imgui/imgui_impl_glfw.cpp
         third_party/include/imgui/imgui_impl_vulkan.cpp
+        third_party/include/ImGuiFileDialog/ImGuiFileDialog.cpp
 
         src/ui/m1k_window.cpp
         src/ui/keyboard_movement_controller.cpp
@@ -54,7 +60,7 @@ target_sources(${MY_ENGINE_NAME} PRIVATE
 
         src/systems/point_light_system.cpp
         src/systems/simple_render_system.cpp
-
+        src/systems/pbr_render_system.cpp
         )
 
 if (WIN32)

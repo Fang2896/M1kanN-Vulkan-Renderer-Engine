@@ -41,7 +41,7 @@ std::unique_ptr<M1kModel> M1kModel::createModelFromFile(M1kDevice &device, const
     Builder builder{};
     builder.loadModel(filepath);
 
-    std::cout << "Vertex Count : " << builder.vertices.size() << "\n";
+    std::cout << "M1K::INFO========Vertex Count : " << builder.vertices.size() << "\n";
 
     return std::make_unique<M1kModel>(device, builder);
 }

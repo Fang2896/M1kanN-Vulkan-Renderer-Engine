@@ -5,10 +5,9 @@ This little engine is used to learn **Vulkan** and reproduce some CG algorithms.
 
 
 ## TODO
-- Basic Functions
-  `viewer.data`: store the viewer data and other options to handle some showcases (i.e. lines, points, label, etc.)
-  `viewer.data.set_data(V, F)` etc functions to set mesh, set shaders.
-
+- glTF model file load
+- ImGui model selection
+- PBR
 
 
 ## References

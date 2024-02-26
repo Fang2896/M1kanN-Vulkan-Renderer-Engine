@@ -13,6 +13,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
+#include "ImGuiFileDialog.h"
 
 // std
 #include <array>
@@ -31,11 +32,11 @@ M1kApplication::M1kApplication() {
     global_pool_ =
         M1kDescriptorPool::Builder(m1k_device_)
             .setMaxSets(M1kSwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, M1kSwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 6 * M1kSwapChain::MAX_FRAMES_IN_FLIGHT)
             .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,MAX_MATERIALS_NUMBER)
             .build();
 
-    loadGameObjects();
+    // loadGameObjects();
 }
 
 
@@ -45,45 +46,83 @@ M1kApplication::~M1kApplication() {
 
 
 void M1kApplication::run() {
-    std::vector<std::unique_ptr<M1kBuffer>> ubo_buffers(M1kSwapChain::MAX_FRAMES_IN_FLIGHT);
-    for (int i = 0; i < ubo_buffers.size(); ++i) {
-        ubo_buffers[i] = std::make_unique<M1kBuffer>(
-            m1k_device_,
-            sizeof(GlobalUbo),
-            1,
+    std::vector<std::unique_ptr<M1kBuffer>> global_ubo_buffers(
+        M1kSwapChain::MAX_FRAMES_IN_FLIGHT);
+    for (int i = 0; i < global_ubo_buffers.size(); ++i) {
+        global_ubo_buffers[i] = std::make_unique<M1kBuffer>(
+            m1k_device_, sizeof(GlobalUbo), 1,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-        ubo_buffers[i]->map();
+        global_ubo_buffers[i]->map();
+    }
+    std::vector<std::unique_ptr<M1kBuffer>> material_ubo_buffers(
+        M1kSwapChain::MAX_FRAMES_IN_FLIGHT);
+    for (int i = 0; i < material_ubo_buffers.size(); ++i) {
+        material_ubo_buffers[i] = std::make_unique<M1kBuffer>(
+            m1k_device_, sizeof(MaterialUbo), 1,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        material_ubo_buffers[i]->map();
     }
 
-    auto global_set_layout = M1kDescriptorSetLayout::Builder(m1k_device_)
-        .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-        .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-        .build();
+    auto simple_set_layout =
+        M1kDescriptorSetLayout::Builder(m1k_device_)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                        VK_SHADER_STAGE_ALL_GRAPHICS)
+            .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        VK_SHADER_STAGE_FRAGMENT_BIT)
+            .build();
+    auto pbr_set_layout =
+        M1kDescriptorSetLayout::Builder(m1k_device_)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                        VK_SHADER_STAGE_ALL_GRAPHICS)
+            .addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                        VK_SHADER_STAGE_ALL_GRAPHICS)
+            .addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        VK_SHADER_STAGE_FRAGMENT_BIT)   // diffuseTex
+            .addBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        VK_SHADER_STAGE_FRAGMENT_BIT)   // roughnessTex
+            .addBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        VK_SHADER_STAGE_FRAGMENT_BIT)   // occlusionTex
+            .addBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        VK_SHADER_STAGE_FRAGMENT_BIT)   // emissiveTex
+            .addBinding(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        VK_SHADER_STAGE_FRAGMENT_BIT)   // normalTex
+            .build();
+
+    // ========FOR TEST ONLY========
+    // for all UBOs of each frame and textures
+    M1kTexture test_texture{m1k_device_,
+                            "../assets/textures/default_texture.png"};
+    auto& test_texture_image_info =
+        test_texture.getDescriptorImageInfo();  // VkDescriptorImageinfo
+    std::vector<VkDescriptorSet> global_descriptor_sets(
+        M1kSwapChain::MAX_FRAMES_IN_FLIGHT);
 
     // for all UBOs of each frame and textures
-    M1kTexture test_texture{m1k_device_, "../assets/textures/default_texture.png"};
-    auto& test_texture_image_info = test_texture.getDescriptorImageInfo();  // VkDescriptorImageinfo
-    std::vector<VkDescriptorSet> global_descriptor_sets(M1kSwapChain::MAX_FRAMES_IN_FLIGHT);
-
+    std::vector<VkDescriptorSet> simple_descriptor_sets(
+        M1kSwapChain::MAX_FRAMES_IN_FLIGHT);
     for (int i = 0; i < M1kSwapChain::MAX_FRAMES_IN_FLIGHT; ++i) {
-        auto buffer_info = ubo_buffers[i]->descriptorInfo();
-        M1kDescriptorWriter(*global_set_layout, *global_pool_)
-            .writeBuffer(0, &buffer_info)
+        auto global_buffer_info = global_ubo_buffers[i]->descriptorInfo();
+        M1kDescriptorWriter(*simple_set_layout, *global_pool_)
+            .writeBuffer(0, &global_buffer_info)
             .writeImage(1, &test_texture_image_info)
-            .build(global_descriptor_sets[i]);
+            .build(simple_descriptor_sets[i]);
     }
 
-    // 对于不同的物体，我们可以有不同的系统（其实就是pipeline）。
-    // 同样，输入的RenderPass也可以不同，其实这里就是最好扩展的地方。
     // systems init
-    SimpleRenderSystem simple_render_system{m1k_device_,
-                                            m1k_renderer_.getSwapChainRenderPass(),
-                                            global_set_layout->getDescriptorSetLayout()};
+    SimpleRenderSystem simple_render_system{
+        m1k_device_, m1k_renderer_.getSwapChainRenderPass(),
+        simple_set_layout->getDescriptorSetLayout()};
 
-    PointLightSystem point_light_system{m1k_device_,
-                                            m1k_renderer_.getSwapChainRenderPass(),
-                                            global_set_layout->getDescriptorSetLayout()};
+    PointLightSystem point_light_system{
+        m1k_device_, m1k_renderer_.getSwapChainRenderPass(),
+        simple_set_layout->getDescriptorSetLayout()};
+
+    PbrRenderSystem pbr_render_system{
+        m1k_device_, m1k_renderer_.getSwapChainRenderPass(),
+        pbr_set_layout->getDescriptorSetLayout()};
+
 
     M1kCamera camera{};
     camera.setViewTarget(glm::vec3(-1.0f, -2.0f, -2.5f), glm::vec3(0.0f,0.0f,0.0f));
@@ -91,6 +130,7 @@ void M1kApplication::run() {
     auto viewer_object = M1kGameObject::createGameObject();  // no model, no renderer (camera object)
     viewer_object.transform.translation.z = -2.5f;
     KeyboardMovementController camera_controller{};
+
 
     //  game loop
     auto current_time = std::chrono::high_resolution_clock::now();
@@ -119,7 +159,7 @@ void M1kApplication::run() {
                 frame_time,
                 command_buffer,
                 camera,
-                global_descriptor_sets[frame_index],
+                simple_descriptor_sets[frame_index],
                 game_objects_
             };
 
@@ -131,20 +171,69 @@ void M1kApplication::run() {
 
             point_light_system.update(frame_info, ubo);
 
-            ubo_buffers[frame_index]->writeToBuffer(&ubo);
-            ubo_buffers[frame_index]->flush();
+            global_ubo_buffers[frame_index]->writeToBuffer(&ubo);
+            global_ubo_buffers[frame_index]->flush();
 
-            // init Imgui frame
-            ImGui_ImplVulkan_NewFrame();
-            ImGui::NewFrame();
-            // point light control
-            ImGui::Begin("Point Light Control");
-            float current_intensity = point_light_system.getOnePointLightIntensity(frame_info);
-            if (current_intensity >= 0 && ImGui::SliderFloat("Point Light Intensity", &current_intensity, 0.0f, 1.0f)) {
-                point_light_system.setAllPointLightsIntensity(current_intensity, frame_info);
+            // imgui
+            {
+                // init Imgui frame
+                ImGui_ImplVulkan_NewFrame();
+                ImGui::NewFrame();
+
+                /*
+                // point light intensity control
+                ImGui::Begin("Point Light Control");
+                float current_intensity =
+                    point_light_system.getOnePointLightIntensity(frame_info);
+                if (current_intensity >= 0 &&
+                    ImGui::SliderFloat("Point Light Intensity",
+                                       &current_intensity, 0.0f, 1.0f)) {
+                    point_light_system.setAllPointLightsIntensity(
+                        current_intensity, frame_info);
+                }
+                */
+
+                // load model button
+                if (ImGui::Button("Load Model")) {
+                    ImGuiFileDialog::Instance()->OpenDialog(
+                        "ChooseModelDialog", "Choose Model", ".obj,.gltf");
+                }
+                if (ImGuiFileDialog::Instance()->Display("ChooseModelDialog")) {
+                    std::string selected_file_path = "";
+                    if (ImGuiFileDialog::Instance()->IsOk()) {
+                        selected_file_path =
+                            ImGuiFileDialog::Instance()
+                                ->GetFilePathName();  // 获取选择的文件路径
+                        // 调用加载模型的函数
+                        std::cout << "M1K::INFO========Select model path: "
+                                  << selected_file_path << std::endl;
+                    }
+                    if(!selected_file_path.empty()) {
+                        loadGameObjects(selected_file_path);
+                    }
+
+                    ImGuiFileDialog::Instance()->Close();
+                }
+
+                if(ImGui::Button("Load Test Scene")) {
+                    if(!displaying_test_scene) {
+                        loadDefaultScene();
+                        displaying_test_scene = true;
+                    } else {
+                        std::cout << "M1K::WARN========Test Scene is Displaying!" << std::endl;
+                    }
+                }
+
+                if (ImGui::Button("Clear Whole Scene")) {
+                    vkDeviceWaitIdle(m1k_device_.device());
+                    game_objects_.clear();
+                    displaying_test_scene = false;
+                    std::cout << "M1K::INFO========Cleared ALL Scene." << std::endl;
+                }
+
+                ImGui::End();
+                ImGui::Render();  // finish imgui frame
             }
-            ImGui::End();
-            ImGui::Render();    // finish imgui frame
 
             // render
             m1k_renderer_.beginSwapChainRenderPass(command_buffer);
@@ -220,10 +309,25 @@ void M1kApplication::initImGUI() {
 }
 
 
-void M1kApplication::loadGameObjects() {
+void M1kApplication::loadGameObjects(const std::string& path, glm::vec3 pos, glm::vec3 scale) {
+     if(path.empty()) {
+        std::cout << "M1K::WARN========Please specify the model's path!" << std::endl;
+        return;
+     }
+
+     std::shared_ptr<M1kModel> target_model = M1kModel::createModelFromFile(m1k_device_, path);
+     auto target_object = M1kGameObject::createGameObject();
+     target_object.model = target_model;
+     target_object.transform.translation = pos;
+     target_object.transform.scale = scale;
+     game_objects_.emplace(target_object.getId(), std::move(target_object));
+     std::cout << "M1K::INFO========Load game object, path: " << path << std::endl;
+}
+
+void M1kApplication::loadDefaultScene() {
     // vase objects:
-    std::shared_ptr<M1kModel> flat_vase_model = M1kModel::createModelFromFile(m1k_device_, "../assets/models/flat_vase.obj");
-    std::shared_ptr<M1kModel> smooth_vase_model = M1kModel::createModelFromFile(m1k_device_, "../assets/models/smooth_vase.obj");
+    std::shared_ptr<M1kModel> flat_vase_model = M1kModel::createModelFromFile(m1k_device_, "../assets/models/obj/flat_vase.obj");
+    std::shared_ptr<M1kModel> smooth_vase_model = M1kModel::createModelFromFile(m1k_device_, "../assets/models/obj/smooth_vase.obj");
 
     auto flat_vase = M1kGameObject::createGameObject();
     flat_vase.model = flat_vase_model;
@@ -238,7 +342,7 @@ void M1kApplication::loadGameObjects() {
     game_objects_.emplace(smooth_vase.getId(), std::move(smooth_vase));
 
     // plane objects:
-    std::shared_ptr<M1kModel> plane_object_model = M1kModel::createModelFromFile(m1k_device_, "../assets/models/quad.obj");
+    std::shared_ptr<M1kModel> plane_object_model = M1kModel::createModelFromFile(m1k_device_, "../assets/models/obj/quad.obj");
     auto plane_object = M1kGameObject::createGameObject();
     plane_object.model = plane_object_model;
     plane_object.transform.translation = {0.0f, 0.5f, 0.0f};
