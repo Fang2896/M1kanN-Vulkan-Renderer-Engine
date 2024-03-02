@@ -65,13 +65,13 @@ glm::mat3 TransformComponent::normalMatrix() {
 }
 
 M1kGameObject M1kGameObject::makePointLight(float intensity, float radius, glm::vec3 color) {
-    M1kGameObject game_object = M1kGameObject::createGameObject();
-    game_object.color = color;
-    game_object.transform.scale.x = radius;
-    game_object.point_light = std::make_unique<PointLightComponent>();
-    game_object.point_light->light_intensity = intensity;
+    M1kGameObject point_light_object = M1kGameObject::createGameObject(GameObjectType::PointLight);
+    point_light_object.color = color;
+    point_light_object.transform.scale.x = radius;
+    point_light_object.point_light = std::make_unique<PointLightComponent>();
+    point_light_object.point_light->light_intensity = intensity;
 
-    return game_object;
+    return point_light_object;
 }
 
 }

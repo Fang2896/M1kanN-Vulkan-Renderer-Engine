@@ -71,7 +71,7 @@ void SimpleRenderSystem::createPipeline(VkRenderPass render_pass) {
         "./shaders/binaries/checkerboard_shader.frag.spv");
 }
 
-void SimpleRenderSystem::renderGameObjects(FrameInfo &frame_info) {
+void SimpleRenderSystem::render(FrameInfo &frame_info) {
 
     m1k_pipeline_->bind(frame_info.command_buffer);
 
@@ -87,7 +87,7 @@ void SimpleRenderSystem::renderGameObjects(FrameInfo &frame_info) {
         auto &obj = kv.second;
 
         // filter
-        if(obj.model == nullptr) continue;
+        if(obj.getType() != GameObjectType::DefaultObject) continue;
 
         SimplePushConstantData push{};
         push.model_matrix = obj.transform.mat4();
@@ -99,8 +99,8 @@ void SimpleRenderSystem::renderGameObjects(FrameInfo &frame_info) {
                            0,
                            sizeof(SimplePushConstantData),
                            &push);
-        obj.model->bind(frame_info.command_buffer);
-        obj.model->draw(frame_info.command_buffer);
+
+        obj.model->draw(frame_info.command_buffer, pipeline_layout_);
     }
 }
 

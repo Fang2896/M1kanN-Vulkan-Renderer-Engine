@@ -43,6 +43,17 @@ void main() {
     vec3 camera_pos_world = ubo.inverse_view_matrix[3].xyz;
     vec3 view_direction = normalize(camera_pos_world - fragPosWorld);
 
+    // direct light
+    vec3 direct_light_direction = normalize(ubo.direct_light.xyz);
+    float direct_intensity = ubo.direct_light.w;
+    vec3 direct_light_diffuse = max(dot(surface_normal, -direct_light_direction), 0.0f) * direct_intensity * vec3(1.0, 1.0, 1.0);
+    diffuse_light += direct_light_diffuse;
+
+    vec3 direct_light_reflect_dir = reflect(direct_light_direction, surface_normal);
+    float direct_light_specular = pow(max(dot(view_direction, direct_light_reflect_dir), 0.0f), 64);
+    specular_light += vec3(1.0f) * direct_light_specular * direct_intensity;
+
+    // point lights
     for(int i = 0; i < ubo.num_lights; i++) {
         PointLight light = ubo.point_lights[i];
         vec3 direction_to_light = light.position.xyz - fragPosWorld;

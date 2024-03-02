@@ -3,7 +3,7 @@
 //
 
 #include "m1k_pipeline.hpp"
-#include "../m1k_model.hpp"
+#include "../objects/m1k_model.hpp"
 
 // std
 #include <fstream>
@@ -62,7 +62,7 @@ void M1kPipeline::createGraphicPipeline(PipelineConfigInfo& config_info,
     auto vert_code = readFile(vert_filepath);
     auto frag_code = readFile(frag_filepath);
 
-    std::cout << "Vertex Shader Code Size : " << vert_code.size() << "\n";
+    std::cout << "M1kVertex Shader Code Size : " << vert_code.size() << "\n";
     std::cout << "Fragment Shader Code Size : " << frag_code.size() << "\n";
 
     createShaderModule(vert_code, &vert_shader_module_);
@@ -217,8 +217,8 @@ void M1kPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& config_info) {
         static_cast<uint32_t>(config_info.dynamics_state_enables.size());
     config_info.dynamic_state_info.flags = 0;
 
-    config_info.binding_descriptions = M1kModel::Vertex::getBindingDescriptions();
-    config_info.attribute_descriptions = M1kModel::Vertex::getAttributeDescriptions();
+    config_info.binding_descriptions = M1kMesh::getBindingDescriptions();
+    config_info.attribute_descriptions = M1kMesh::getAttributeDescriptions();
 }
 
 void M1kPipeline::enableAlphaBlending(PipelineConfigInfo& config_info) {

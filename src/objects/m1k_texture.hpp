@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/m1k_device.hpp"
+#include "../core/m1k_device.hpp"
 
 namespace m1k {
 
@@ -17,6 +17,7 @@ class M1kTexture {
     M1kTexture operator=(const M1kTexture&) = delete;
 
     VkDescriptorImageInfo& getDescriptorImageInfo();
+    const std::string& getTextureFilePath();
 
 private:
     void createTextureImage(const std::string& path);
@@ -35,6 +36,8 @@ private:
     void createDescriptorImageInfo();
 
     M1kDevice &m1k_device_;
+
+    std::string file_path;
 
     uint32_t mip_levels_;
     VkImage m1k_texture_image_;

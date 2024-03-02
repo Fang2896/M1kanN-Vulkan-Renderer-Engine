@@ -15,7 +15,7 @@
 namespace m1k {
 
 M1kTexture::M1kTexture(M1kDevice& device, const std::string& path)
-    : m1k_device_(device)
+    : m1k_device_(device), file_path(path)
 {
     createTextureImage(path);
     createTextureImageView();
@@ -33,6 +33,10 @@ M1kTexture::~M1kTexture() {
 
 VkDescriptorImageInfo& M1kTexture::getDescriptorImageInfo() {
     return m1k_image_info_;
+}
+
+const std::string& M1kTexture::getTextureFilePath() {
+    return file_path;
 }
 
 void M1kTexture::createTextureImage(const std::string& path) {

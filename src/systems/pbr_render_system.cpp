@@ -17,15 +17,12 @@
 
 namespace m1k {
 
-struct PbrPushConstantData {
-    glm::mat4 model_matrix{1.0f};
-    glm::mat4 normal_matrix{1.0f};
-};
-
-PbrRenderSystem::PbrRenderSystem(M1kDevice &device, VkRenderPass render_pass, VkDescriptorSetLayout global_set_layout)
+PbrRenderSystem::PbrRenderSystem(M1kDevice &device, VkRenderPass render_pass,
+                                 VkDescriptorSetLayout global_set_layout,
+                                 VkDescriptorSetLayout pbr_set_layout)
     : m1k_device_(device)
 {
-    createPipelineLayout(global_set_layout);
+    createPipelineLayout(global_set_layout, pbr_set_layout);
     createPipeline(render_pass);
 }
 
@@ -33,21 +30,14 @@ PbrRenderSystem::~PbrRenderSystem() {
     vkDestroyPipelineLayout(m1k_device_.device(), pipeline_layout_, nullptr);
 }
 
-void PbrRenderSystem::createPipelineLayout(VkDescriptorSetLayout global_set_layout) {
-
-    VkPushConstantRange push_constant_range{};
-    push_constant_range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    push_constant_range.offset = 0;
-    push_constant_range.size = sizeof(PbrPushConstantData);
-
-    std::vector<VkDescriptorSetLayout> descriptor_set_layouts{global_set_layout};
+void PbrRenderSystem::createPipelineLayout(VkDescriptorSetLayout global_set_layout,
+                                           VkDescriptorSetLayout pbr_set_layout) {
+    std::vector<VkDescriptorSetLayout> descriptor_set_layouts{global_set_layout, pbr_set_layout};
 
     VkPipelineLayoutCreateInfo pipeline_layout_info{};
     pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipeline_layout_info.setLayoutCount = static_cast<uint32_t>(descriptor_set_layouts.size());
     pipeline_layout_info.pSetLayouts = descriptor_set_layouts.data();
-    pipeline_layout_info.pushConstantRangeCount = 1;
-    pipeline_layout_info.pPushConstantRanges = &push_constant_range;
 
     if(vkCreatePipelineLayout(m1k_device_.device(),
                                &pipeline_layout_info,
@@ -71,8 +61,7 @@ void PbrRenderSystem::createPipeline(VkRenderPass render_pass) {
         "./shaders/binaries/pbr_shader.frag.spv");
 }
 
-void PbrRenderSystem::renderGameObjects(FrameInfo &frame_info) {
-
+void PbrRenderSystem::render(FrameInfo &frame_info) {
     m1k_pipeline_->bind(frame_info.command_buffer);
 
     vkCmdBindDescriptorSets(
@@ -87,20 +76,9 @@ void PbrRenderSystem::renderGameObjects(FrameInfo &frame_info) {
         auto &obj = kv.second;
 
         // filter
-        if(obj.model == nullptr) continue;
+        if(obj.getType() != GameObjectType::PbrObject) continue;
 
-        PbrPushConstantData push{};
-        push.model_matrix = obj.transform.mat4();
-        push.normal_matrix = obj.transform.normalMatrix();
-
-        vkCmdPushConstants(frame_info.command_buffer,
-                           pipeline_layout_,
-                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                           0,
-                           sizeof(PbrPushConstantData),
-                           &push);
-        obj.model->bind(frame_info.command_buffer);
-        obj.model->draw(frame_info.command_buffer);
+        obj.model->draw(frame_info.command_buffer, pipeline_layout_);
     }
 }
 

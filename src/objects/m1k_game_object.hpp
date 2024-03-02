@@ -17,6 +17,14 @@
 
 namespace m1k {
 
+enum GameObjectType{
+    DefaultObject = 0,
+    PbrObject,
+    PointLight,
+    Camera,
+    END
+};
+
 struct TransformComponent {
     glm::vec3 translation{};    // position offset
     glm::vec3 scale{1.0f, 1.0f, 1.0f};
@@ -25,7 +33,6 @@ struct TransformComponent {
     // faster mat4 transform
     glm::mat4 mat4();
     glm::mat3 normalMatrix();
-
 };
 
 struct PointLightComponent {
@@ -37,9 +44,9 @@ class M1kGameObject {
     using id_t = unsigned int;
     using Map = std::unordered_map<id_t, M1kGameObject>;
 
-    static M1kGameObject createGameObject() {
+    static M1kGameObject createGameObject(GameObjectType type = GameObjectType::DefaultObject) {
         static id_t currentId = 0;
-        return M1kGameObject{currentId++};
+        return M1kGameObject{currentId++, type};
     }
 
     static M1kGameObject makePointLight(float intensity = 10.f,
@@ -52,19 +59,21 @@ class M1kGameObject {
     M1kGameObject &operator=(M1kGameObject &&) = default;
 
     id_t getId() { return id_; }
+    GameObjectType getType() { return type_; }
 
     glm::vec3 color{};
     TransformComponent transform{};
 
     // optional pointer components
     std::shared_ptr<M1kModel> model{};
-
     std::unique_ptr<PointLightComponent> point_light = nullptr;
 
    private:
-    M1kGameObject(id_t objectId) : id_(objectId) {}
+    M1kGameObject(id_t objectId, GameObjectType objectType)
+        : id_(objectId), type_(objectType) {}
 
     id_t id_;
+    GameObjectType type_;
 };
 
 

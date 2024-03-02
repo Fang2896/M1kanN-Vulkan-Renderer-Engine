@@ -109,7 +109,7 @@ void PointLightSystem::render(FrameInfo &frame_info) {
     std::map<float, M1kGameObject::id_t> sorted;
     for(auto& kv : frame_info.game_objects) {
         auto& obj = kv.second;
-        if(obj.point_light == nullptr) continue;
+        if(obj.getType() != GameObjectType::PointLight) continue;
 
         auto offset = frame_info.camera.getPosition() - obj.transform.translation;
         float dist_squared = glm::dot(offset, offset);

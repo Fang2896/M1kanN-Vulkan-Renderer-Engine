@@ -26,7 +26,7 @@ layout (std140, set = 0, binding = 0) uniform GlobalUbo {
 } globalUbo;
 
 // for each object or vertex
-layout(std140, binding = 1) uniform MaterialUbo {
+layout(std140, set = 1, binding = 0) uniform MaterialUbo {
     vec4 base_color_factor;
     mat4 model_matrix;
     mat4 inverse_model_matrix;

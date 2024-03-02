@@ -6,9 +6,9 @@
 
 #include "../core/m1k_device.hpp"
 #include "../core/m1k_pipeline.hpp"
-#include "../m1k_camera.hpp"
 #include "../m1k_frame_info.hpp"
-#include "../m1k_game_object.hpp"
+#include "../objects/m1k_game_object.hpp"
+#include "../ui/m1k_camera.hpp"
 
 // std
 #include <memory>
@@ -24,7 +24,7 @@ class SimpleRenderSystem {
     SimpleRenderSystem(const SimpleRenderSystem&) = delete;
     SimpleRenderSystem &operator=(const SimpleRenderSystem&) = delete;
 
-    void renderGameObjects(FrameInfo &frame_info);
+    void render(FrameInfo &frame_info);
 
    private:
     void createPipelineLayout(VkDescriptorSetLayout global_set_layout);

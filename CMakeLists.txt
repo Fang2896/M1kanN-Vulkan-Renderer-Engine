@@ -4,14 +4,25 @@ project(M1kanN_Vulkan_Engine)
 set(CMAKE_CXX_STANDARD 17)
 
 set(MY_ENGINE_NAME M1kanN_Vulkan_Engine)
-add_executable(${MY_ENGINE_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp
-        src/systems/pbr_render_system.cpp)
+add_executable(${MY_ENGINE_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp)
+
+# =========== TEST ============ #
+set(TEST_EXECUTABLE_NAME M1kanN_Vulkan_Engine_Test)
+add_executable(${TEST_EXECUTABLE_NAME} ${CMAKE_SOURCE_DIR}/src/tests/test_assimp_load.cpp)
+
 
 # =========== INCLUDE ============ #
 find_package(Vulkan REQUIRED)
-target_include_directories(${MY_ENGINE_NAME} PRIVATE
+include_directories(
         ${Vulkan_INCLUDE_DIR}
         ${Vulkan_INCLUDE_DIR}/../Third-Party/Include
+
+        src/
+        src/core
+        src/objects
+        src/systems
+        src/ui
+        src/utils
 
         third_party/include
         third_party/include/stb
@@ -19,6 +30,7 @@ target_include_directories(${MY_ENGINE_NAME} PRIVATE
         third_party/include/imgui
         third_party/include/ImGuiFileDialog
         third_party/include/dirent
+        third_party/include/assimp
         )
 
 if (WIN32)
@@ -30,7 +42,7 @@ endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/shaders)
 
-target_sources(${MY_ENGINE_NAME} PRIVATE
+set(COMMON_SOURCES
         # imgui
         third_party/include/imgui/imgui.cpp
         third_party/include/imgui/imgui_demo.cpp
@@ -40,7 +52,9 @@ target_sources(${MY_ENGINE_NAME} PRIVATE
         third_party/include/imgui/imgui_impl_glfw.cpp
         third_party/include/imgui/imgui_impl_vulkan.cpp
         third_party/include/ImGuiFileDialog/ImGuiFileDialog.cpp
+)
 
+target_sources(${MY_ENGINE_NAME} PRIVATE ${COMMON_SOURCES}
         src/ui/m1k_window.cpp
         src/ui/keyboard_movement_controller.cpp
 
@@ -53,29 +67,58 @@ target_sources(${MY_ENGINE_NAME} PRIVATE
 
         src/main.cpp
         src/m1k_application.cpp
-        src/m1k_model.cpp
-        src/m1k_texture.cpp
-        src/m1k_camera.cpp
-        src/m1k_game_object.cpp
+        src/objects/m1k_model.cpp
+        src/objects/m1k_texture.cpp
+        src/objects/m1k_mesh.cpp
+        src/ui/m1k_camera.cpp
+        src/objects/m1k_game_object.cpp
+        src/utils/m1k_utils.cpp
 
         src/systems/point_light_system.cpp
         src/systems/simple_render_system.cpp
         src/systems/pbr_render_system.cpp
-        )
+)
+
+target_sources(${TEST_EXECUTABLE_NAME} PRIVATE ${COMMON_SOURCES}
+        src/tests/test_assimp_load.cpp
+)
 
 if (WIN32)
     message(STATUS "==== Windows System ====")
+
     set(GLFW_LIB_PATH ${CMAKE_SOURCE_DIR}/third_party/lib/glfw3/glfw3.lib)
+    set(ASSIMP_PATH ${CMAKE_SOURCE_DIR}/third_party/lib/assimp/vs2019_assimp_5.3.1)
+    set(ASSIMP_LIB_PATH ${ASSIMP_PATH}/assimp-vc142-mt.lib)
+    set(ASSIMP_DLL_PATH ${ASSIMP_PATH}/assimp-vc142-mt.dll)
+
     target_link_libraries(${MY_ENGINE_NAME}
             ${Vulkan_LIBRARIES}
-            ${GLFW_LIB_PATH})
+            ${GLFW_LIB_PATH}
+            ${ASSIMP_LIB_PATH})
+    target_link_libraries(${TEST_EXECUTABLE_NAME}
+            ${Vulkan_LIBRARIES}
+            ${GLFW_LIB_PATH}
+            ${ASSIMP_LIB_PATH})
+
+    # assimp.dll
+    add_custom_command(TARGET ${MY_ENGINE_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${ASSIMP_DLL_PATH}
+            $<TARGET_FILE_DIR:${MY_ENGINE_NAME}>)
+    add_custom_command(TARGET ${TEST_EXECUTABLE_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${ASSIMP_DLL_PATH}
+            $<TARGET_FILE_DIR:${TEST_EXECUTABLE_NAME}>)
+
 elseif (APPLE)
     message(STATUS "==== Mac System ====")
     find_package(glfw3 REQUIRED)
     target_link_libraries(${MY_ENGINE_NAME} ${Vulkan_LIBRARIES} glfw)
+    target_link_libraries(${TEST_EXECUTABLE_NAME} ${Vulkan_LIBRARIES} glfw)
 else ()
     message(FATAL_ERROR "Unsupported Platform")
 endif ()
+
 
 
 add_dependencies(${MY_ENGINE_NAME} Shaders)

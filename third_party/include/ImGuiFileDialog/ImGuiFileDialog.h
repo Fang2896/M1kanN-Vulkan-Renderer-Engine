@@ -995,19 +995,19 @@ bool (IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas vUserDatas)
 ```
 if the callback is returning false, the file is ignored, so not displayed by the dailog
 
-example in the gltf separated files : (see the branch DemoApp for example use)
+example in the glTF separated files : (see the branch DemoApp for example use)
 
-A gltf file can have data description and datas files separated.
+A glTF file can have data description and datas files separated.
 in this case only the file with description will be shown in the dialog, so with not the full size of all attached datas
 
-With the file format .gltf who is containing datas in a separate .bin
+With the file format .glTF who is containing datas in a separate .bin
 
 syntax :
 ```cpp
 config.userFileAttributes = [](IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas vUserDatas) -> bool {
     if (vFileInfosPtr != nullptr) {
-        // this demo not take into account .gltf who have data insise. besauce keepd easy just for demo
-        if (vFileInfosPtr->SearchForExt(".gltf", true)) {
+        // this demo not take into account .glTF who have data insise. besauce keepd easy just for demo
+        if (vFileInfosPtr->SearchForExt(".glTF", true)) {
             auto bin_file_path_name = vFileInfosPtr->filePath + IGFD::Utils::GetPathSeparator() + vFileInfosPtr->fileNameLevels[0] + ".bin";
             struct stat statInfos   = {};
             char timebuf[100];
@@ -1031,12 +1031,12 @@ you can also display a tootlip for a file displayed when the mouse is over a ded
 you juste need to set your message for the FileDialogConfig.tooltipMessage
 and specify the column in FileDialogConfig.tooltipColumn
 
-ex code from the DemoApp branch for display the decomposition of gltf total size
+ex code from the DemoApp branch for display the decomposition of glTF total size
 
 syntax :
 ```cpp
 vFileInfosPtr->tooltipMessage = toStr("%s : %s\n%s : %s",             //
-    (vFileInfosPtr->fileNameLevels[0] + ".gltf").c_str(),             //
+    (vFileInfosPtr->fileNameLevels[0] + ".glTF").c_str(),             //
     IGFD::Utils::FormatFileSize(vFileInfosPtr->fileSize).c_str(),     //
     (vFileInfosPtr->fileNameLevels[0] + ".bin").c_str(),              //
     IGFD::Utils::FormatFileSize((size_t)statInfos.st_size).c_str());  //
