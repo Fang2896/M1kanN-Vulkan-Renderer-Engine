@@ -13,9 +13,8 @@
 #include "ui/m1k_camera.hpp"
 #include "utils/m1k_utils.hpp"
 
-#include "systems/point_light_system.hpp"
-#include "systems/simple_render_system.hpp"
 #include "systems/pbr_render_system.hpp"
+#include "systems/point_light_system.hpp"
 
 #include "ui/keyboard_movement_controller.hpp"
 #include "ui/m1k_window.hpp"
@@ -37,8 +36,7 @@ class M1kApplication {
     M1kApplication(const M1kApplication&) = delete;
     M1kApplication &operator=(const M1kApplication&) = delete;
 
-    void loadGameObjects(
-                        const std::string& path = "",
+    void loadGameObjects(const std::string& path = "",
                          glm::vec3 pos = {0.0f,0.0f,0.0f},
                          glm::vec3 scale = {1.0f,1.0f,1.0f});
     void loadDefaultScene();
@@ -47,6 +45,7 @@ class M1kApplication {
 
    private:
     void initImGUI();
+    void loopImGUI(FrameInfo& frame_info);
 
     M1kWindow m1k_window_{kWidth, kHeight, "Hello Vulkan"};
     M1kDevice m1k_device_{m1k_window_};
@@ -61,8 +60,13 @@ class M1kApplication {
 
     M1kGameObject::Map game_objects_;
 
+    std::unique_ptr<PointLightSystem> point_light_system_;
+    std::unique_ptr<PbrRenderSystem> pbr_render_system_;
+
     // state information
-    bool is_displaying_test_scene = false;
+    bool is_displaying_test_scene_ = false;
+    const std::string default_model_select_path_ =
+        "../assets/models/glTF";
 };
 
 }

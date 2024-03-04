@@ -98,18 +98,14 @@ void M1kApplication::run() {
     }
 
     // systems init
-    SimpleRenderSystem simple_render_system{
+    point_light_system_ = std::make_unique<PointLightSystem>(
         m1k_device_, m1k_renderer_.getSwapChainRenderPass(),
-        global_set_layout_->getDescriptorSetLayout()};
+        global_set_layout_->getDescriptorSetLayout());
 
-    PointLightSystem point_light_system{
-        m1k_device_, m1k_renderer_.getSwapChainRenderPass(),
-        global_set_layout_->getDescriptorSetLayout()};
-
-    PbrRenderSystem pbr_render_system{
+    pbr_render_system_ = std::make_unique<PbrRenderSystem>(
         m1k_device_, m1k_renderer_.getSwapChainRenderPass(),
         global_set_layout_->getDescriptorSetLayout(),
-        pbr_set_layout_->getDescriptorSetLayout()};
+        pbr_set_layout_->getDescriptorSetLayout());
 
     M1kCamera camera{};
     camera.setViewTarget(glm::vec3(-1.0f, -2.0f, -2.5f), glm::vec3(0.0f,0.0f,0.0f));
@@ -154,78 +150,19 @@ void M1kApplication::run() {
             ubo.view_matrix = camera.getView();
             ubo.inverse_view_matrix = camera.getViewInverse();
 
-            point_light_system.update(frame_info, ubo);
+            point_light_system_->update(frame_info, ubo);
 
             global_ubo_buffers[frame_index]->writeToBuffer(&ubo);
             global_ubo_buffers[frame_index]->flush();
 
             // imgui
-            {
-                // init Imgui frame
-                ImGui_ImplVulkan_NewFrame();
-                ImGui::NewFrame();
-
-                if (is_displaying_test_scene) {
-                    // point light intensity control
-                    ImGui::Begin("Point Light Control");
-                    float current_intensity =
-                        point_light_system.getOnePointLightIntensity(frame_info);
-                    if (current_intensity >= 0 &&
-                        ImGui::SliderFloat("Point Light Intensity",
-                                           &current_intensity, 0.0f, 1.0f)) {
-                        point_light_system.setAllPointLightsIntensity(
-                            current_intensity, frame_info);
-                    }
-
-                    ImGui::End();
-                }
-
-                // load model button
-                if (ImGui::Button("Load Model")) {
-                    ImGuiFileDialog::Instance()->OpenDialog(
-                        "ChooseModelDialog", "Choose Model", ".gltf,.obj");
-                }
-                if (ImGuiFileDialog::Instance()->Display("ChooseModelDialog")) {
-                    std::string selected_file_path = "";
-                    if (ImGuiFileDialog::Instance()->IsOk()) {
-                        selected_file_path =
-                            ImGuiFileDialog::Instance()->GetFilePathName();
-                        std::cout << "M1K::INFO========Select model path: "
-                                  << selected_file_path << std::endl;
-                    }
-                    if (!selected_file_path.empty()) {
-                        loadGameObjects(selected_file_path);
-                    }
-
-                    ImGuiFileDialog::Instance()->Close();
-                }
-
-                if (ImGui::Button("Load Test Scene")) {
-                    if (!is_displaying_test_scene) {
-                        loadDefaultScene();
-                        is_displaying_test_scene = true;
-                    } else {
-                        std::cout << "M1K::WARN========Test Scene is Displaying!"
-                                  << std::endl;
-                    }
-                }
-
-                if (ImGui::Button("Clear Whole Scene")) {
-                    vkDeviceWaitIdle(m1k_device_.device());
-                    game_objects_.clear();
-                    is_displaying_test_scene = false;
-                    std::cout << "M1K::INFO========Cleared ALL Scene." << std::endl;
-                }
-
-                ImGui::Render();  // finish imgui frame
-            }
+            loopImGUI(frame_info);
 
             // render
             m1k_renderer_.beginSwapChainRenderPass(command_buffer);
 
-            simple_render_system.render(frame_info);
-            point_light_system.render(frame_info);
-            pbr_render_system.render(frame_info);
+            point_light_system_->render(frame_info);
+            pbr_render_system_->render(frame_info);
 
             // render ImGui draw data
             ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
@@ -294,6 +231,67 @@ void M1kApplication::initImGUI() {
     ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
+void M1kApplication::loopImGUI(FrameInfo& frame_info) {
+    // init Imgui frame
+    ImGui_ImplVulkan_NewFrame();
+    ImGui::NewFrame();
+
+    if (is_displaying_test_scene_) {
+        // point light intensity control
+        ImGui::Begin("Point Light Control");
+        float current_intensity =
+            point_light_system_->getOnePointLightIntensity(frame_info);
+        if (current_intensity >= 0 &&
+            ImGui::SliderFloat("Point Light Intensity",
+                               &current_intensity, 0.0f, 1.0f)) {
+            point_light_system_->setAllPointLightsIntensity(
+                current_intensity, frame_info);
+        }
+
+        ImGui::End();
+    }
+
+    // load model button
+    if (ImGui::Button("Load Model")) {
+        IGFD::FileDialogConfig config;
+        config.path = default_model_select_path_;
+        ImGuiFileDialog::Instance()->OpenDialog(
+            "ChooseModelDialog", "Choose Model", ".gltf,.glb",
+            config);
+    }
+    if (ImGuiFileDialog::Instance()->Display("ChooseModelDialog")) {
+        std::string selected_file_path = "";
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            selected_file_path =
+                ImGuiFileDialog::Instance()->GetFilePathName();
+        }
+        if (!selected_file_path.empty()) {
+            loadGameObjects(selected_file_path);
+        }
+
+        ImGuiFileDialog::Instance()->Close();
+    }
+
+    if (ImGui::Button("Load Test Scene")) {
+        if (!is_displaying_test_scene_) {
+            loadDefaultScene();
+            is_displaying_test_scene_ = true;
+        } else {
+            std::cout << "M1K::WARN========Test Scene is Displaying!"
+                      << std::endl;
+        }
+    }
+
+    if (ImGui::Button("Clear Whole Scene")) {
+        vkDeviceWaitIdle(m1k_device_.device());
+        game_objects_.clear();
+        is_displaying_test_scene_ = false;
+        std::cout << "M1K::INFO~~~~~~~~Cleared ALL Scene." << std::endl;
+    }
+
+    ImGui::Render();  // finish imgui frame
+}
+
 void M1kApplication::loadGameObjects(const std::string& path,
                                      glm::vec3 pos, glm::vec3 scale) {
      if(path.empty()) {
@@ -301,15 +299,7 @@ void M1kApplication::loadGameObjects(const std::string& path,
         return;
      }
 
-     GameObjectType game_object_type = GameObjectType::DefaultObject;
-     if(identifyFileSuffix("obj", path)) {
-        game_object_type = GameObjectType::DefaultObject;
-     } else if(identifyFileSuffix("gltf", path)) {
-        game_object_type = GameObjectType::PbrObject;
-     } else {
-        std::cout << "M1K::WARN========Unsupported Model Format"  << std::endl;
-        return;
-     }
+     GameObjectType game_object_type = GameObjectType::PbrObject;
 
     auto target_object = M1kGameObject::createGameObject(game_object_type);
     target_object.model = std::make_shared<M1kModel>(m1k_device_,
@@ -320,7 +310,7 @@ void M1kApplication::loadGameObjects(const std::string& path,
     target_object.transform.scale = scale;
     target_object.transform.rotation = glm::vec3(0,90,0);
     game_objects_.emplace(target_object.getId(), std::move(target_object));
-    std::cout << "M1K::INFO========Load game object, path: " << path << std::endl;
+    std::cout << "M1K::INFO~~~~~~~~Load game object, path: " << path << std::endl;
 }
 
 void M1kApplication::loadDefaultScene() {

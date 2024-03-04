@@ -24,15 +24,15 @@
 namespace m1k {
 
 struct M1kVertex {
-    glm::vec3 position{};
-    glm::vec3 color{};
-    glm::vec3 normal{};
-    glm::vec3 tangent{};
-    glm::vec2 uv{};
+    glm::vec3 position{0.0f,0.0f,0.0f};
+//    glm::vec3 color{1.0f,1.0f,1.0f};
+    glm::vec3 normal{0.0f,0.0f,0.0f};
+    glm::vec4 tangent{0.0f,0.0f,0.0f,0.0f};
+    glm::vec2 uv{0.0f,0.0f};
 
     bool operator==(const M1kVertex& other) const {
         return position == other.position &&
-               color == other.color &&
+//               color == other.color &&
                normal == other.normal &&
                tangent == other.tangent &&
                uv == other.uv;
@@ -42,7 +42,7 @@ struct M1kVertex {
 
 // for each mesh
 struct M1kMaterialSet {
-    std::shared_ptr<M1kTexture> baseColor_texture{};            // bd = 1
+    std::shared_ptr<M1kTexture> base_color_texture{};            // bd = 1
     std::shared_ptr<M1kTexture> roughness_metalness_texture{};  // bd = 2
     std::shared_ptr<M1kTexture> occlusion_texture{};            // bd = 3
     std::shared_ptr<M1kTexture> emissive_texture{};             // bd = 4
@@ -55,29 +55,30 @@ struct M1kMaterialSet {
     float roughness_factor{1.0f};
     float occlusion_factor{1.0f};
 
-    M1kMaterialSet(std::shared_ptr<M1kTexture> base_color,
-                std::shared_ptr<M1kTexture> roughness_metalness,
-                std::shared_ptr<M1kTexture> occlusion,
-                std::shared_ptr<M1kTexture> emissive,
-                std::shared_ptr<M1kTexture> normal)
-        : baseColor_texture(std::move(base_color)),
-          roughness_metalness_texture(std::move(roughness_metalness)),
-          occlusion_texture(std::move(occlusion)),
-          emissive_texture(std::move(emissive)),
-          normal_texture(std::move(normal))  {}
+//    M1kMaterialSet(std::shared_ptr<M1kTexture> base_color,
+//                std::shared_ptr<M1kTexture> roughness_metalness,
+//                std::shared_ptr<M1kTexture> occlusion,
+//                std::shared_ptr<M1kTexture> emissive,
+//                std::shared_ptr<M1kTexture> normal)
+//        : base_color_texture(std::move(base_color)),
+//          roughness_metalness_texture(std::move(roughness_metalness)),
+//          occlusion_texture(std::move(occlusion)),
+//          emissive_texture(std::move(emissive)),
+//          normal_texture(std::move(normal))  {}
+
     M1kMaterialSet() = default;
     ~M1kMaterialSet() = default;
 
-    uint32_t getTextureFlags() {
-        uint32_t texture_flags = 0;
-        if (baseColor_texture)              texture_flags |= 1 << 0;
-        if (normal_texture)                 texture_flags |= 1 << 1;
-        if (roughness_metalness_texture)    texture_flags |= 1 << 2;
-        if (occlusion_texture)              texture_flags |= 1 << 3;
-        if (emissive_texture)               texture_flags |= 1 << 4;
-
-        return texture_flags;
-    }
+//    uint32_t getTextureFlags() {
+//        uint32_t texture_flags = 0;
+//        if (base_color_texture)              texture_flags |= 1 << 0;
+//        if (normal_texture)                 texture_flags |= 1 << 1;
+//        if (roughness_metalness_texture)    texture_flags |= 1 << 2;
+//        if (occlusion_texture)              texture_flags |= 1 << 3;
+//        if (emissive_texture)               texture_flags |= 1 << 4;
+//
+//        return texture_flags;
+//    }
 };
 
 

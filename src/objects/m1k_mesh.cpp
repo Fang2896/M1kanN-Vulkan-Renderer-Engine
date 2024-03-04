@@ -5,6 +5,8 @@
 #include "m1k_mesh.hpp"
 
 
+
+
 namespace m1k {
 
 M1kMesh::M1kMesh(M1kDevice& device,
@@ -28,8 +30,8 @@ std::vector<VkVertexInputAttributeDescription> M1kMesh::getAttributeDescriptions
     std::vector<VkVertexInputAttributeDescription> attribute_descriptions{};
 
     attribute_descriptions.push_back({0,0,VK_FORMAT_R32G32B32_SFLOAT,static_cast<uint32_t>(offsetof(M1kVertex, position))});
-    attribute_descriptions.push_back({1,0,VK_FORMAT_R32G32B32_SFLOAT,static_cast<uint32_t>(offsetof(M1kVertex, color))});
-    attribute_descriptions.push_back({2,0,VK_FORMAT_R32G32B32_SFLOAT,static_cast<uint32_t>(offsetof(M1kVertex, normal))});
+    attribute_descriptions.push_back({1,0,VK_FORMAT_R32G32B32A32_SFLOAT,static_cast<uint32_t>(offsetof(M1kVertex, normal))});
+    attribute_descriptions.push_back({2,0,VK_FORMAT_R32G32B32_SFLOAT,static_cast<uint32_t>(offsetof(M1kVertex, tangent))});
     attribute_descriptions.push_back({3,0,VK_FORMAT_R32G32_SFLOAT,static_cast<uint32_t>(offsetof(M1kVertex, uv))});
 
     return attribute_descriptions;
@@ -105,9 +107,7 @@ void M1kMesh::createDescriptorSets(M1kDescriptorSetLayout &set_layout, M1kDescri
     // update material UBO
     MaterialUbo material_ubo;
 
-    material_ubo.model = glm::rotate(glm::mat4(1.0f),
-                                     glm::radians(180.0f),
-                                     glm::vec3(1.0f,0.0f,0.0f));
+    material_ubo.model = glm::mat4(1.0f);
     material_ubo.model_inv = glm::mat4(1.0f);
 
     material_ubo.base_color_factor = material_set_.base_color_factor;
@@ -125,21 +125,22 @@ void M1kMesh::createDescriptorSets(M1kDescriptorSetLayout &set_layout, M1kDescri
     auto writer = M1kDescriptorWriter(set_layout, pool)
         .writeBuffer(0, &material_buffer_info);
 
-    if(material_set_.baseColor_texture != nullptr) {
-        writer.writeImage(1, &material_set_.baseColor_texture->getDescriptorImageInfo());
-    }
-    if(material_set_.roughness_metalness_texture != nullptr) {
-        writer.writeImage(2, &material_set_.roughness_metalness_texture->getDescriptorImageInfo());
-    }
-    if(material_set_.occlusion_texture != nullptr) {
-        writer.writeImage(3, &material_set_.occlusion_texture->getDescriptorImageInfo());
-    }
-    if(material_set_.emissive_texture != nullptr) {
-        writer.writeImage(4, &material_set_.emissive_texture->getDescriptorImageInfo());
+    if(material_set_.base_color_texture != nullptr) {
+        writer.writeImage(1, &material_set_.base_color_texture->getDescriptorImageInfo());
     }
     if(material_set_.normal_texture != nullptr) {
-        writer.writeImage(5, &material_set_.normal_texture->getDescriptorImageInfo());
+        writer.writeImage(2, &material_set_.normal_texture->getDescriptorImageInfo());
     }
+    if(material_set_.roughness_metalness_texture != nullptr) {
+        writer.writeImage(3, &material_set_.roughness_metalness_texture->getDescriptorImageInfo());
+    }
+    if(material_set_.occlusion_texture != nullptr) {
+        writer.writeImage(4, &material_set_.occlusion_texture->getDescriptorImageInfo());
+    }
+    if(material_set_.emissive_texture != nullptr) {
+        writer.writeImage(5, &material_set_.emissive_texture->getDescriptorImageInfo());
+    }
+
 
     writer.build(mesh_descriptor_set_);
 }

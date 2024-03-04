@@ -46,15 +46,16 @@ layout(std140, set = 1, binding = 0) uniform MaterialUbo {
 }materialUbo;
 
 layout (set = 1, binding = 1) uniform sampler2D diffuseTexture;
-layout (set = 1, binding = 2) uniform sampler2D roughnessMetalnessTexture;
-layout (set = 1, binding = 3) uniform sampler2D occlusionTexture;
-layout (set = 1, binding = 4) uniform sampler2D emissiveTexture;
-layout (set = 1, binding = 5) uniform sampler2D normalTexture;
+layout (set = 1, binding = 2) uniform sampler2D normalTexture;
+layout (set = 1, binding = 3) uniform sampler2D roughnessMetalnessTexture;
+layout (set = 1, binding = 4) uniform sampler2D occlusionTexture;
+layout (set = 1, binding = 5) uniform sampler2D emissiveTexture;
 
-layout (location = 0) in vec2 vTexcoord0;
+layout (location = 0) in vec4 vPositionWorld;
 layout (location = 1) in vec3 vNormalWorld;
 layout (location = 2) in vec4 vTangentWorld;
-layout (location = 3) in vec4 vPositionWorld;
+layout (location = 3) in vec2 vTexcoord0;
+
 
 layout (location = 0) out vec4 frag_color;
 

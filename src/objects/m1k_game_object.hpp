@@ -18,8 +18,7 @@
 namespace m1k {
 
 enum GameObjectType{
-    DefaultObject = 0,
-    PbrObject,
+    PbrObject = 0,
     PointLight,
     Camera,
     END
@@ -44,7 +43,7 @@ class M1kGameObject {
     using id_t = unsigned int;
     using Map = std::unordered_map<id_t, M1kGameObject>;
 
-    static M1kGameObject createGameObject(GameObjectType type = GameObjectType::DefaultObject) {
+    static M1kGameObject createGameObject(GameObjectType type = GameObjectType::PbrObject) {
         static id_t currentId = 0;
         return M1kGameObject{currentId++, type};
     }
