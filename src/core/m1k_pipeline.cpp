@@ -3,7 +3,7 @@
 //
 
 #include "m1k_pipeline.hpp"
-#include "../objects/m1k_model.hpp"
+#include "m1k_model.hpp"
 
 // std
 #include <fstream>

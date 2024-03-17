@@ -40,15 +40,14 @@ layout(std140, set = 1, binding = 0) uniform MaterialUbo {
 }materialUbo;
 
 layout(location=0) in vec3 position;
-layout(location=1) in vec4 tangent;
-layout(location=2) in vec3 normal;
+layout(location=1) in vec3 normal;
+layout(location=2) in vec4 tangent;
 layout(location=3) in vec2 texCoord0;
 
-layout (location = 0) out vec2 vTexcoord0;
+layout (location = 0) out vec4 vPositionWorld;
 layout (location = 1) out vec3 vNormalWorld;
 layout (location = 2) out vec4 vTangentWorld;
-layout (location = 3) out vec4 vPositionWorld;
-
+layout (location = 3) out vec2 vTexcoord0;
 
 void main() {
     vPositionWorld = materialUbo.model_matrix * vec4(position, 1);

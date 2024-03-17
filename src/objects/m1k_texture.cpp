@@ -51,7 +51,7 @@ void M1kTexture::createTextureImage(const std::string& path) {
     VkDeviceSize image_size = tex_width * tex_height * 4;
 
     if(!pixels) {
-        throw std::runtime_error("failed to load texture image!");
+        throw std::runtime_error("M1k::ERR++++++++failed to load texture image!");
     }
 
     VkBuffer staging_buffer;

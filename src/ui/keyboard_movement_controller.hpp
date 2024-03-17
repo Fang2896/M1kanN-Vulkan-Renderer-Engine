@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "objects/m1k_game_object.hpp"
+#include "m1k_game_object.hpp"
 #include "m1k_window.hpp"
 
 namespace m1k {
