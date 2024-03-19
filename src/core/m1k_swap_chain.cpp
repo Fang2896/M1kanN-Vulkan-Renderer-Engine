@@ -403,6 +403,7 @@ VkSurfaceFormatKHR  M1kSwapChain::chooseSwapSurfaceFormat(
     for (const auto &availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
             availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            std::cout << "M1k::INFO::Color Space: VK_FORMAT_B8G8R8A8_SRGB and VK_COLOR_SPACE_SRGB_NONLINEAR_KHR" << std::endl;
             return availableFormat;
         }
     }

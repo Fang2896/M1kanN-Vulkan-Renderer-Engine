@@ -29,8 +29,8 @@ M1kModel::M1kModel(M1kDevice& device,
                    const std::string& filepath)
     : m1K_device_(device), descriptor_set_layout_(set_layout), descriptor_pool_(pool)
 {
-    std::string default_texture_path = "../assets/textures/NULL.png";
-    textures_["NULL"] = std::make_shared<M1kTexture>(m1K_device_,
+    std::string default_texture_path = "../assets/textures/dummy_texture.png";
+    textures_["dummy_texture"] = std::make_shared<M1kTexture>(m1K_device_,
                                                         default_texture_path);
 
     loadModel(filepath);
@@ -107,7 +107,7 @@ void M1kModel::loadModel(const std::string& filepath) {
                         factor[2] << "," << factor[3] << "," <<
                         ")" << std::endl;
                 } else {
-                    material_set.base_color_texture = textures_["NULL"];
+                    material_set.base_color_texture = textures_["dummy_texture"];
                 }
 
                 if (material.normalTexture.index >= 0) {
@@ -133,7 +133,7 @@ void M1kModel::loadModel(const std::string& filepath) {
                     std::cout << "M1k::INFO~~~~~~~~Normal texture path: " << image.uri << std::endl;
                     std::cout << "M1k::INFO~~~~~~~~Normal scale: " << normal_factor << std::endl;
                 } else {
-                    material_set.normal_texture = textures_["NULL"];
+                    material_set.normal_texture = textures_["dummy_texture"];
                 }
 
                 if (material.pbrMetallicRoughness.metallicRoughnessTexture.index >= 0) {
@@ -160,7 +160,7 @@ void M1kModel::loadModel(const std::string& filepath) {
                     std::cout << "M1k::INFO~~~~~~~~Metallic factor: " << metallic_factor << std::endl;
                     std::cout << "M1k::INFO~~~~~~~~Roughness factor: " << roughness_factor << std::endl;
                 } else {
-                    material_set.roughness_metalness_texture = textures_["NULL"];
+                    material_set.roughness_metalness_texture = textures_["dummy_texture"];
                 }
 
                 if (material.occlusionTexture.index >= 0) {
@@ -184,7 +184,7 @@ void M1kModel::loadModel(const std::string& filepath) {
                     std::cout << "M1k::INFO~~~~~~~~Occlusion texture path: " << image.uri << std::endl;
                     std::cout << "M1k::INFO~~~~~~~~Occlusion strength: " << occlusion_factor << std::endl;
                 } else {
-                    material_set.occlusion_texture  = textures_["NULL"];
+                    material_set.occlusion_texture  = textures_["dummy_texture"];
                 }
 
                 if (material.emissiveTexture.index >= 0) {
@@ -211,7 +211,7 @@ void M1kModel::loadModel(const std::string& filepath) {
                         factor[2] << "," <<
                         ")" << std::endl;
                 } else {
-                    material_set.emissive_texture  = textures_["NULL"];
+                    material_set.emissive_texture  = textures_["dummy_texture"];
                 }
 
                 auto it = material.extensions.find("KHR_materials_clearcoat");

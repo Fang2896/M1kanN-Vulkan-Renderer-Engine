@@ -81,7 +81,7 @@ void M1kApplication::run() {
 
     // for all UBOs of each frame and textures
     M1kTexture test_texture{m1k_device_,
-                            "../assets/textures/default_texture.png"};
+                            "../assets/textures/checkboard_texture.png"};
     auto& test_texture_image_info =
         test_texture.getDescriptorImageInfo();  // VkDescriptorImageinfo
 
