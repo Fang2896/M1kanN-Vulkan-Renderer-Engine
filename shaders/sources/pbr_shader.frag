@@ -148,6 +148,7 @@ void main() {
     // vec3 L = normalize(light.xyz - vPosition.xyz);
     // vec3 N = normalize(vNormal);
     // vec3 H = normalize(L + V);
+
     vec3 camera_pos_world = globalUbo.inverse_view_matrix[3].xyz;
     vec3 V = normalize( camera_pos_world - vPositionWorld.xyz );
     vec3 L = normalize( globalUbo.direct_light.xyz - vPositionWorld.xyz );
@@ -218,11 +219,13 @@ void main() {
         float fr = f0 + ( 1 - f0 ) * pow(1 - abs( HdotV ), 5 );
         vec3 fresnel_mix = mix( diffuse_brdf, vec3( specular_brdf ), fr );
 
+        // ambient environment color
+
         vec3 material_colour = mix( fresnel_mix, conductor_fresnel, metalness );
 
         material_colour = emissive + mix( material_colour, material_colour * ao, materialUbo.occlusion_factor);
 
-        frag_color = vec4( encode_srgb( material_colour ), base_colour.a );
+         frag_color = vec4( ( material_colour ), base_colour.a );
     } else {
         frag_color = vec4( base_colour.rgb * 0.1, base_colour.a );
     }

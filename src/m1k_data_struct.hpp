@@ -22,7 +22,7 @@ struct alignas( 16 ) GlobalUbo {
     glm::mat4 projection_matrix{1.0f};
     glm::mat4 view_matrix{1.0f};
     glm::mat4 inverse_view_matrix{1.0f};    // last column is the camera position
-    glm::vec4 ambient_light_color{1.0f, 1.0f, 1.0f, 0.02f}; // rgb,intensity
+    glm::vec4 ambient_light_color{1.0f, 1.0f, 1.0f, 0.001f}; // rgb,intensity
     glm::vec4 direct_light{1.0f, -1.0f, 1.0f, 0.5f};  // x,y,z,intensity
     struct PointLight point_lights[MAX_LIGHTS];
     uint32_t num_lights;

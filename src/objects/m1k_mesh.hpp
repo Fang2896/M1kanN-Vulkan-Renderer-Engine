@@ -50,7 +50,7 @@ struct M1kMaterialSet {
 //    std::shared_ptr<M1kTexture> null_texture{};
 
     glm::vec4 base_color_factor{1.0f};
-    glm::vec3 emissive_factor{1.0f};
+    glm::vec3 emissive_factor{0.0f};
     float metallic_factor{1.0f};
     float roughness_factor{1.0f};
     float occlusion_factor{1.0f};

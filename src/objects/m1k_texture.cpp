@@ -91,7 +91,7 @@ void M1kTexture::createTextureImage(const std::string& path) {
     vkDestroyBuffer(m1k_device_.device(), staging_buffer, nullptr);
     vkFreeMemory(m1k_device_.device(), staging_buffer_memory, nullptr);
 
-    generateMipmaps(m1k_texture_image_, VK_FORMAT_R8G8B8A8_SRGB,
+    generateMipmaps(m1k_texture_image_, VK_FORMAT_R8G8B8A8_UNORM,
                     tex_width, tex_height, mip_levels_);
 }
 

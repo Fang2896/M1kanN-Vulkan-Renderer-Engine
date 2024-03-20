@@ -120,7 +120,6 @@ void M1kMesh::createDescriptorSets(M1kDescriptorSetLayout &set_layout, M1kDescri
     material_ubo_buffer_->writeToBuffer(&material_ubo);
     material_ubo_buffer_->flush();
 
-    // TODO: 记得改变shader里的binding
     auto material_buffer_info = material_ubo_buffer_->descriptorInfo();
     auto writer = M1kDescriptorWriter(set_layout, pool)
         .writeBuffer(0, &material_buffer_info);
