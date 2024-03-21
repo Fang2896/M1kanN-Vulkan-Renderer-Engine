@@ -7,7 +7,6 @@
 #include "m1k_model.hpp"
 
 // libs
-#include <glm/ext/matrix_transform.hpp>
 
 // std
 #include <memory>
@@ -24,15 +23,6 @@ enum GameObjectType{
     END
 };
 
-struct TransformComponent {
-    glm::vec3 translation{};    // position offset
-    glm::vec3 scale{1.0f, 1.0f, 1.0f};
-    glm::vec3 rotation{};
-
-    // faster mat4 transform
-    glm::mat4 mat4();
-    glm::mat3 normalMatrix();
-};
 
 struct PointLightComponent {
     float light_intensity = 1.0f;

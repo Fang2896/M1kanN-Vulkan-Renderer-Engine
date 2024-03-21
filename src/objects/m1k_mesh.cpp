@@ -5,8 +5,6 @@
 #include "m1k_mesh.hpp"
 
 
-
-
 namespace m1k {
 
 M1kMesh::M1kMesh(M1kDevice& device,
@@ -107,8 +105,8 @@ void M1kMesh::createDescriptorSets(M1kDescriptorSetLayout &set_layout, M1kDescri
     // update material UBO
     MaterialUbo material_ubo;
 
-    material_ubo.model = glm::mat4(1.0f);
-    material_ubo.model_inv = glm::mat4(1.0f);
+    material_ubo.model = material_set_.transform;
+    material_ubo.model_inv = material_set_.inv_transform;
 
     material_ubo.base_color_factor = material_set_.base_color_factor;
     material_ubo.emissive_factor = material_set_.emissive_factor;

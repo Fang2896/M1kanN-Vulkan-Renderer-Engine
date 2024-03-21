@@ -5,10 +5,21 @@ This little engine is used to learn **Vulkan** and reproduce some CG algorithms.
 
 
 ## TODO
-- glTF model file load
-- ImGui model selection
-- PBR
+* [x] glTF model file load
+* [x] ImGui model selection
+* [x] PBR rendering
+* [x] Optimize glTF model load:
+  * [x] Load and use correct transform matrix from glTF
+  * [x] Multiple mesh load. (e.g. Sponza scene)
+* [ ] Cleaning useless code
+* [ ] Use PushConstant to transfer data which will change every frame (e.g. View Matrix)
+* [ ] Bindless function / render pipeline.
 
+
+## Agreements
+- Info: `M1k::INFO~~~~~~~~`
+- Warn: `M1k::WARN========`
+- Error: `M1k::ERR--------`
 
 ## References
 

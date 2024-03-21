@@ -38,7 +38,7 @@ class M1kModel {
     void draw(VkCommandBuffer command_buffer, VkPipelineLayout& pipeline_layout);
 
    private:
-    void loadModel(const std::string& filepath);
+    void loadModelFromGLTF(const std::string& filepath);
 
     M1kDevice& m1K_device_;
     M1kDescriptorSetLayout &descriptor_set_layout_;

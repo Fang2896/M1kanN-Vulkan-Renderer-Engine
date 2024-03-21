@@ -29,10 +29,10 @@ struct alignas( 16 ) GlobalUbo {
 };
 
 struct alignas( 16 ) MaterialUbo {
-    glm::vec4 base_color_factor;
     glm::mat4 model;
     glm::mat4 model_inv;
 
+    glm::vec4 base_color_factor;
     glm::vec3 emissive_factor;
     float  metallic_factor;
 

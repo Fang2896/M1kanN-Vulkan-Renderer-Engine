@@ -25,13 +25,14 @@ namespace m1k {
 
 #define MAX_FRAME_TIME 0.5f
 #define MAX_MATERIALS_NUMBER 200
+#define MAX_GLOBAL_POOL_SET_SIZE 1024
 
 M1kApplication::M1kApplication() {
     initImGUI();
 
     global_pool_ =
         M1kDescriptorPool::Builder(m1k_device_)
-            .setMaxSets(100)
+            .setMaxSets(MAX_GLOBAL_POOL_SET_SIZE)
             .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 50 * M1kSwapChain::MAX_FRAMES_IN_FLIGHT)
             .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,MAX_MATERIALS_NUMBER)
             .build();

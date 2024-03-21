@@ -10,10 +10,6 @@
 #include "m1k_data_struct.hpp"
 #include "m1k_descriptor.hpp"
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 // std
 #include <string>
@@ -55,6 +51,8 @@ struct M1kMaterialSet {
     float roughness_factor{1.0f};
     float occlusion_factor{1.0f};
 
+    glm::mat4 transform{};
+    glm::mat4 inv_transform{};
 //    M1kMaterialSet(std::shared_ptr<M1kTexture> base_color,
 //                std::shared_ptr<M1kTexture> roughness_metalness,
 //                std::shared_ptr<M1kTexture> occlusion,

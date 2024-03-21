@@ -33,7 +33,7 @@ M1kModel::M1kModel(M1kDevice& device,
     textures_["dummy_texture"] = std::make_shared<M1kTexture>(m1K_device_,
                                                         default_texture_path);
 
-    loadModel(filepath);
+    loadModelFromGLTF(filepath);
 }
 
 M1kModel::~M1kModel() = default;
@@ -46,7 +46,8 @@ void M1kModel::draw(VkCommandBuffer command_buffer, VkPipelineLayout& pipeline_l
 }
 
 
-void M1kModel::loadModel(const std::string& filepath) {
+
+void M1kModel::loadModelFromGLTF(const std::string& filepath) {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
     std::string err;
@@ -67,16 +68,38 @@ void M1kModel::loadModel(const std::string& filepath) {
     std::cout << "M1k::INFO~~~~~~~~Loaded glTF model: " << filepath << std::endl;
     model_directory_path_ = filepath.substr(0, filepath.find_last_of("/\\"));
 
-    for (const auto& mesh : model.meshes) {
+    for (const auto& node : model.nodes) {
+        const auto& mesh = model.meshes[node.mesh];
         std::cout << "M1k::INFO~~~~~~~~Mesh name: " << mesh.name << std::endl;
-        if(!mesh.primitives.empty()) {
-            const auto& primitive = mesh.primitives[0];
+
+        TransformComponent transform_component;
+        const auto& node_scale = node.scale;
+        const auto& node_rotation = node.rotation;
+        const auto& node_translation = node.translation;
+
+        if(node_scale.size() != 0) {
+            transform_component.scale = {node_scale[0], node_scale[1], node_scale[2]};
+        }
+        if(node_rotation.size() != 0) {
+            transform_component.rotation = {node_rotation[0], node_rotation[1], node_rotation[2]};
+        }
+        if(node_translation.size() != 0) {
+            transform_component.translation = {node_translation[0], node_translation[1], node_translation[2]};
+        }
+
+        glm::mat4 node_transform = transform_component.mat4();
+        glm::mat4 inv_transform = glm::inverse(node_transform);
+
+        for(const auto& primitive : mesh.primitives) {
             const auto& attributes = primitive.attributes;
 
             std::vector<M1kVertex> vertices{};
             std::vector<uint32_t> indices{};
             M1kMaterialSet material_set;
             uint32_t flags = 0;
+
+            material_set.transform = node_transform;
+            material_set.inv_transform = inv_transform;
 
             // materials
             if (primitive.material >= 0) {
@@ -304,14 +327,9 @@ void M1kModel::loadModel(const std::string& filepath) {
                                                         vertices, indices,
                                                         material_set, flags));
         }
-
-        if(mesh.primitives.size() > 1) {
-            std::cout << "M1k::WARN========Mesh contain more than one primitives!" << std::endl;
-        }
     }
 
 }
-
 
 
 }
