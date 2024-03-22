@@ -16,9 +16,16 @@ namespace m1k {
 M1kPipeline::M1kPipeline(M1kDevice& device,
             PipelineConfigInfo& config_info,
             const std::string& vert_filepath,
-            const std::string& frag_filepath) : m1k_device_(device) {
+            const std::string& frag_filepath) : m1k_device_(device)
+{
+    // first check whether we have the pipeline cache
+    createDirectoryIfNotExists(kDefaultPipelineCacheDirectory);
+    processPipelineCache(kDefaultPipelineCachePath);
 
-      createGraphicPipeline(config_info, vert_filepath, frag_filepath);
+    createGraphicPipeline(config_info, vert_filepath, frag_filepath);
+
+    // 创建完，如果之前没有的话，就要保存，同时也要删除pipeline_cache
+    savePipelineCache(kDefaultPipelineCachePath);
 }
 
 M1kPipeline::~M1kPipeline() {
@@ -51,7 +58,8 @@ void M1kPipeline::bind(VkCommandBuffer command_buffer) {
 
 void M1kPipeline::createGraphicPipeline(PipelineConfigInfo& config_info,
                            const std::string& vert_filepath,
-                           const std::string& frag_filepath) {
+                           const std::string& frag_filepath)
+{
     assert(
         config_info.pipeline_layout != VK_NULL_HANDLE &&
         "Cannot create graphics pipeline :: No pipelineLayout provided in configInfo");
@@ -62,7 +70,7 @@ void M1kPipeline::createGraphicPipeline(PipelineConfigInfo& config_info,
     auto vert_code = readFile(vert_filepath);
     auto frag_code = readFile(frag_filepath);
 
-    std::cout << "M1kVertex Shader Code Size : " << vert_code.size() << "\n";
+    std::cout << "Vertex Shader Code Size : " << vert_code.size() << "\n";
     std::cout << "Fragment Shader Code Size : " << frag_code.size() << "\n";
 
     createShaderModule(vert_code, &vert_shader_module_);
@@ -124,13 +132,64 @@ void M1kPipeline::createGraphicPipeline(PipelineConfigInfo& config_info,
     pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 
     if(vkCreateGraphicsPipelines(m1k_device_.device(),
-            VK_NULL_HANDLE,
+            pipeline_cache_,
             1,
             &pipeline_info,
             nullptr,
             &graphics_pipeline_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline");
     }
+}
+
+void M1kPipeline::processPipelineCache(const std::string& cache_path) {
+    VkPipelineCacheCreateInfo pipeline_cache_create_info {
+        VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO
+    };
+    char* cache_data = nullptr;
+    size_t cache_size = 0;
+    if(readFileBinary(cache_path, &cache_data, &cache_size)) {
+        std::cout << "M1k::INFO~~~~~~~~Reading cache from: " <<
+            cache_path << "\n\t Size: " << cache_size << std::endl;
+    } else {
+        std::cout << "M1k::INFO~~~~~~~~Create cache to:" << cache_path << std::endl;
+    }
+
+    pipeline_cache_create_info.initialDataSize = cache_size;
+    pipeline_cache_create_info.pInitialData = cache_data;
+
+    if(vkCreatePipelineCache(m1k_device_.device(),
+                              &pipeline_cache_create_info,
+                              nullptr,
+                              &pipeline_cache_) != VK_SUCCESS)
+    {
+        throw std::runtime_error("M1K::ERR--------Create pipeline cache failed!");
+    }
+
+    delete[] cache_data;
+}
+
+void M1kPipeline::savePipelineCache(const std::string& cache_path) {
+    // store cache into file
+    size_t cache_data_size = 0;
+    vkGetPipelineCacheData(m1k_device_.device(),
+                           pipeline_cache_,
+                           &cache_data_size, nullptr);
+
+    void* tobe_write_cache_data = allocateAligned(cache_data_size, 64);
+
+    if(vkGetPipelineCacheData( m1k_device_.device(),
+                               pipeline_cache_,
+                               &cache_data_size,
+                               tobe_write_cache_data ) == VK_SUCCESS)
+    {
+        writeFileBinary( cache_path, tobe_write_cache_data, cache_data_size );
+    } else {
+        std::cerr << "M1k::ERR--------Failed to get pipeline cache data." << std::endl;
+    }
+
+    deallocateAligned(tobe_write_cache_data);
+
+    vkDestroyPipelineCache(m1k_device_.device(), pipeline_cache_, nullptr);
 }
 
 void M1kPipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shader_module) {

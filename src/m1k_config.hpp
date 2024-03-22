@@ -15,3 +15,8 @@ static constexpr int kMaxGlobalPoolSetSize = 1024;
 static constexpr int kMaxBindlessResources = 1024;
 static constexpr int kBindlessTextureBinding = 0;
 
+static const std::string kDefaultPipelineCacheDirectory =
+    "./PipelineCache";
+static const std::string kDefaultPipelineCachePath =
+    "./PipelineCache/pipeline_cache";
+

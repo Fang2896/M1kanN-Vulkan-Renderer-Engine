@@ -6,6 +6,11 @@
 
 #include <string>
 #include <algorithm>
+#include <fstream>
+#include <cstddef>
+#include <algorithm>
+#include <filesystem>
+#include <iostream>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -42,5 +47,13 @@ struct TransformComponent {
 std::string getFileExtension(const std::string& filePath);
 
 bool identifyFileSuffix(const std::string& suffix, const std::string& filePath);
+std::string getFilePathNameWithoutSuffix(const std::string& path);
+
+bool readFileBinary(const std::string& filepath, char** data, size_t* size);
+void writeFileBinary(const std::string& file_path, const void* data, size_t size);
+bool createDirectoryIfNotExists(const std::string& path);
+
+void* allocateAligned(size_t size, size_t alignment);
+void deallocateAligned(void* aligned_ptr);
 
 }

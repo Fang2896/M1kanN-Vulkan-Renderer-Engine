@@ -12,9 +12,8 @@ This little engine is used to learn **Vulkan** and reproduce some CG algorithms.
   * [x] Load and use correct transform matrix from glTF
   * [x] Multiple mesh load. (e.g. Sponza scene)
 * [ ] Cleaning useless code
-* [ ] Use PushConstant to transfer data which will change every frame (e.g. View Matrix)
-* [ ] Bindless function / render pipeline.
-* [ ] Sampler setting according to glTF
+* [x] Bindless function / render pipeline.
+* [ ] Pipeline automatic creation according to Shader.
 
 
 ## Agreements

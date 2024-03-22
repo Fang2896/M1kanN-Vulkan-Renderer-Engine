@@ -5,10 +5,12 @@
 #pragma once
 
 #include "m1k_device.hpp"
+#include "m1k_config.hpp"
 
 // std
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 
 namespace m1k {
@@ -65,10 +67,15 @@ class M1kPipeline {
                                const std::string& vert_filepath,
                                const std::string& frag_filepath);
 
+    void processPipelineCache(const std::string& cache_path);
+    void savePipelineCache(const std::string& cache_path);
+
     void createShaderModule(const std::vector<char>& code, VkShaderModule* shader_module);
 
     M1kDevice &m1k_device_;
     VkPipeline graphics_pipeline_;
+    VkPipelineCache pipeline_cache_ = VK_NULL_HANDLE;
+
     VkShaderModule vert_shader_module_;
     VkShaderModule frag_shader_module_;
 };

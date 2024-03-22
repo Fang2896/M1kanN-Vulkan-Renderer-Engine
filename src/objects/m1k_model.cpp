@@ -91,6 +91,8 @@ void M1kModel::loadModelFromGLTF(const std::string& filepath) {
     }
 
     for (const auto& node : model.nodes) {
+        if(node.mesh < 0 || node.mesh >= model.meshes.size()) continue;
+
         const auto& mesh = model.meshes[node.mesh];
         std::cout << "M1k::INFO~~~~~~~~Mesh name: " << mesh.name << std::endl;
 
