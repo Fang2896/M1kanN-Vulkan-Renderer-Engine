@@ -23,20 +23,22 @@
 
 namespace m1k {
 
-#define MAX_FRAME_TIME 0.5f
-#define MAX_MATERIALS_NUMBER 200
-#define MAX_GLOBAL_POOL_SET_SIZE 1024
-
 M1kApplication::M1kApplication() {
     initImGUI();
 
     global_pool_ =
         M1kDescriptorPool::Builder(m1k_device_)
-            .setMaxSets(MAX_GLOBAL_POOL_SET_SIZE)
+            .setMaxSets(kMaxGlobalPoolSetSize)
             .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 50 * M1kSwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,MAX_MATERIALS_NUMBER)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,kMaxMaterialsNumber)
             .build();
 
+    bindless_pool_ =
+        M1kDescriptorPool::Builder(m1k_device_)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, kMaxBindlessResources)
+            .setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT)
+            .setMaxSets( 1 * kMaxBindlessResources)
+            .build();
     // loadGameObjects();
 }
 
@@ -68,25 +70,34 @@ void M1kApplication::run() {
         M1kDescriptorSetLayout::Builder(m1k_device_)
             .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                         VK_SHADER_STAGE_ALL_GRAPHICS)
-            .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                        VK_SHADER_STAGE_FRAGMENT_BIT)   // diffuseTex
-            .addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                        VK_SHADER_STAGE_FRAGMENT_BIT)   // roughnessTex
-            .addBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                        VK_SHADER_STAGE_FRAGMENT_BIT)   // occlusionTex
-            .addBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                        VK_SHADER_STAGE_FRAGMENT_BIT)   // emissiveTex
-            .addBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                        VK_SHADER_STAGE_FRAGMENT_BIT)   // normalTex
+//            .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+//                        VK_SHADER_STAGE_FRAGMENT_BIT)   // diffuseTex
+//            .addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+//                        VK_SHADER_STAGE_FRAGMENT_BIT)   // roughnessTex
+//            .addBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+//                        VK_SHADER_STAGE_FRAGMENT_BIT)   // occlusionTex
+//            .addBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+//                        VK_SHADER_STAGE_FRAGMENT_BIT)   // emissiveTex
+//            .addBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+//                        VK_SHADER_STAGE_FRAGMENT_BIT)   // normalTex
             .build();
+    bindless_set_layout_ =
+        M1kDescriptorSetLayout::Builder(m1k_device_)
+            .addBinding(kBindlessTextureBinding,
+                        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        VK_SHADER_STAGE_FRAGMENT_BIT,
+                        kMaxBindlessResources)
+            .build_for_bindless();
+
 
     // for all UBOs of each frame and textures
+    // JUST FOR TEST
     M1kTexture test_texture{m1k_device_,
                             "../assets/textures/checkboard_texture.png"};
     auto& test_texture_image_info =
         test_texture.getDescriptorImageInfo();  // VkDescriptorImageinfo
 
-    // for test render system ONLY
+    // for TEST render system ONLY
     // for all UBOs of each frame and textures
     std::vector<VkDescriptorSet> global_descriptor_sets(
         M1kSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -98,15 +109,29 @@ void M1kApplication::run() {
             .build(global_descriptor_sets[i]);
     }
 
+    // for Bindless render system
+    VkDescriptorSet bindless_descriptor_set;
+    M1kDescriptorPool::getBindlessDescriptorSet(m1k_device_,
+                                                  bindless_pool_->getPool(),
+                                                  bindless_set_layout_->getDescriptorSetLayout(),
+                                                  bindless_descriptor_set,
+                                                    kMaxBindlessResources);
+
     // systems init
     point_light_system_ = std::make_unique<PointLightSystem>(
         m1k_device_, m1k_renderer_.getSwapChainRenderPass(),
         global_set_layout_->getDescriptorSetLayout());
 
-    pbr_render_system_ = std::make_unique<PbrRenderSystem>(
+//    pbr_render_system_ = std::make_unique<PbrRenderSystem>(
+//        m1k_device_, m1k_renderer_.getSwapChainRenderPass(),
+//        global_set_layout_->getDescriptorSetLayout(),
+//        pbr_set_layout_->getDescriptorSetLayout());
+
+    bindless_pbr_render_system_ = std::make_unique<BindlessPbrRenderSystem>(
         m1k_device_, m1k_renderer_.getSwapChainRenderPass(),
         global_set_layout_->getDescriptorSetLayout(),
-        pbr_set_layout_->getDescriptorSetLayout());
+        pbr_set_layout_->getDescriptorSetLayout(),
+        bindless_set_layout_->getDescriptorSetLayout());
 
     M1kCamera camera{};
     camera.setViewTarget(glm::vec3(-1.0f, -2.0f, -2.5f), glm::vec3(0.0f,0.0f,0.0f));
@@ -125,7 +150,7 @@ void M1kApplication::run() {
             std::chrono::duration<float, std::chrono::seconds::period>(new_time - current_time).count();
         current_time = new_time;
 
-        frame_time = glm::min(frame_time, MAX_FRAME_TIME);
+        frame_time = glm::min(frame_time, kMaxFrameTime);
 
         camera_controller.moveInPlaneXZ(m1k_window_.getGLFWwindow(), frame_time, viewer_object);
         camera.setViewYXZ(viewer_object.transform.translation, viewer_object.transform.rotation);
@@ -138,11 +163,12 @@ void M1kApplication::run() {
             int frame_index = m1k_renderer_.getFrameIndex();
             FrameInfo frame_info{
                 frame_index,
-                 frame_time,
-                 command_buffer,
-                 camera,
-                 global_descriptor_sets[frame_index],
-                 game_objects_
+                frame_time,
+                command_buffer,
+                camera,
+                global_descriptor_sets[frame_index],
+                bindless_descriptor_set,
+                game_objects_
             };
 
             // update global UBO!
@@ -162,14 +188,21 @@ void M1kApplication::run() {
             // render
             m1k_renderer_.beginSwapChainRenderPass(command_buffer);
 
+            bindless_pbr_render_system_->updateBindlessTextures(frame_info);
+
             point_light_system_->render(frame_info);
-            pbr_render_system_->render(frame_info);
+            // pbr_render_system_->render(frame_info);
+            bindless_pbr_render_system_->render(frame_info);
 
             // render ImGui draw data
             ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
 
             m1k_renderer_.endSwapChainRenderPass(command_buffer);
             m1k_renderer_.endFrame();
+
+            // update bindless textures
+
+            m1k_renderer_.submitQueue();
         }
     }
 

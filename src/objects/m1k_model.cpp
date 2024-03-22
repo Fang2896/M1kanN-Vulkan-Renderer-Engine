@@ -30,15 +30,27 @@ M1kModel::M1kModel(M1kDevice& device,
     : m1K_device_(device), descriptor_set_layout_(set_layout), descriptor_pool_(pool)
 {
     std::string default_texture_path = "../assets/textures/dummy_texture.png";
-    textures_["dummy_texture"] = std::make_shared<M1kTexture>(m1K_device_,
-                                                        default_texture_path);
+    dummy_texture_ = std::make_shared<M1kTexture>(m1K_device_,
+                                                default_texture_path);
+    to_update_textures_["dummy_texture"] = dummy_texture_;
 
     loadModelFromGLTF(filepath);
 }
 
 M1kModel::~M1kModel() = default;
 
-void M1kModel::draw(VkCommandBuffer command_buffer, VkPipelineLayout& pipeline_layout) {
+void M1kModel::draw(VkCommandBuffer command_buffer,
+                    VkDescriptorSet bindless_set,
+                    VkPipelineLayout& pipeline_layout) {
+    // bind bindless descriptor set
+    vkCmdBindDescriptorSets(
+        command_buffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        pipeline_layout,
+        1, 1,
+        &bindless_set,
+        0, nullptr);
+
     for(auto& mesh : meshes_) {
         mesh->bind(command_buffer, pipeline_layout);
         mesh->draw(command_buffer);
@@ -67,6 +79,16 @@ void M1kModel::loadModelFromGLTF(const std::string& filepath) {
 
     std::cout << "M1k::INFO~~~~~~~~Loaded glTF model: " << filepath << std::endl;
     model_directory_path_ = filepath.substr(0, filepath.find_last_of("/\\"));
+
+    // First load all textures and record new to be updated texture
+    for(const auto& img : model.images) {
+        if(textures_.find(img.uri) == textures_.end()) {
+            textures_[img.uri] =
+                std::make_shared<M1kTexture>(m1K_device_,
+                                             model_directory_path_ + "/" + img.uri);
+            to_update_textures_[img.uri] = textures_[img.uri];  // for update
+        }
+    }
 
     for (const auto& node : model.nodes) {
         const auto& mesh = model.meshes[node.mesh];
@@ -118,7 +140,7 @@ void M1kModel::loadModelFromGLTF(const std::string& filepath) {
                             std::make_shared<M1kTexture>(m1K_device_,
                                                          model_directory_path_ + "/" + image.uri);
                     }
-                    material_set.base_color_texture  = textures_[image.uri];
+                    material_set.base_color_texture_handle  = textures_[image.uri]->getIndex();
 
                     const auto& factor = material.pbrMetallicRoughness.baseColorFactor;
                     material_set.base_color_factor = glm::vec4(factor[0],factor[1],factor[2],factor[3]);
@@ -130,7 +152,7 @@ void M1kModel::loadModelFromGLTF(const std::string& filepath) {
                         factor[2] << "," << factor[3] << "," <<
                         ")" << std::endl;
                 } else {
-                    material_set.base_color_texture = textures_["dummy_texture"];
+                    material_set.base_color_texture_handle = dummy_texture_->getIndex();
                 }
 
                 if (material.normalTexture.index >= 0) {
@@ -145,18 +167,17 @@ void M1kModel::loadModelFromGLTF(const std::string& filepath) {
                             std::make_shared<M1kTexture>(m1K_device_,
                                                          model_directory_path_ + "/" + image.uri);
                     }
-                    material_set.normal_texture  = textures_[image.uri];
+                    material_set.normal_texture_handle  = textures_[image.uri]->getIndex();
 
-                    // TODO: 修改shader，增加normal scale
-                    const auto normal_factor = static_cast<float>(material.normalTexture.scale);
-//                    material_set.normal_factor = normal_factor;
+                    const auto normal_scale = static_cast<float>(material.normalTexture.scale);
+                    material_set.normal_scale = normal_scale;
 
                     flags |= 1 << 1;
 
                     std::cout << "M1k::INFO~~~~~~~~Normal texture path: " << image.uri << std::endl;
-                    std::cout << "M1k::INFO~~~~~~~~Normal scale: " << normal_factor << std::endl;
+                    std::cout << "M1k::INFO~~~~~~~~Normal scale: " << normal_scale << std::endl;
                 } else {
-                    material_set.normal_texture = textures_["dummy_texture"];
+                    material_set.normal_texture_handle = dummy_texture_->getIndex();
                 }
 
                 if (material.pbrMetallicRoughness.metallicRoughnessTexture.index >= 0) {
@@ -171,7 +192,7 @@ void M1kModel::loadModelFromGLTF(const std::string& filepath) {
                             std::make_shared<M1kTexture>(m1K_device_,
                                                          model_directory_path_ + "/" + image.uri);
                     }
-                    material_set.roughness_metalness_texture  = textures_[image.uri];
+                    material_set.roughness_metalness_texture_handle  = textures_[image.uri]->getIndex();
 
                     const auto metallic_factor = static_cast<float>(material.pbrMetallicRoughness.metallicFactor);
                     const auto roughness_factor = static_cast<float>(material.pbrMetallicRoughness.roughnessFactor);
@@ -183,7 +204,7 @@ void M1kModel::loadModelFromGLTF(const std::string& filepath) {
                     std::cout << "M1k::INFO~~~~~~~~Metallic factor: " << metallic_factor << std::endl;
                     std::cout << "M1k::INFO~~~~~~~~Roughness factor: " << roughness_factor << std::endl;
                 } else {
-                    material_set.roughness_metalness_texture = textures_["dummy_texture"];
+                    material_set.roughness_metalness_texture_handle = dummy_texture_->getIndex();
                 }
 
                 if (material.occlusionTexture.index >= 0) {
@@ -198,7 +219,7 @@ void M1kModel::loadModelFromGLTF(const std::string& filepath) {
                             std::make_shared<M1kTexture>(m1K_device_,
                                                          model_directory_path_ + "/" + image.uri);
                     }
-                    material_set.occlusion_texture  = textures_[image.uri];
+                    material_set.occlusion_texture_handle  = textures_[image.uri]->getIndex();
 
                     const auto occlusion_factor = static_cast<float>(material.occlusionTexture.strength);
                     material_set.occlusion_factor = occlusion_factor;
@@ -207,7 +228,7 @@ void M1kModel::loadModelFromGLTF(const std::string& filepath) {
                     std::cout << "M1k::INFO~~~~~~~~Occlusion texture path: " << image.uri << std::endl;
                     std::cout << "M1k::INFO~~~~~~~~Occlusion strength: " << occlusion_factor << std::endl;
                 } else {
-                    material_set.occlusion_texture  = textures_["dummy_texture"];
+                    material_set.occlusion_texture_handle  = dummy_texture_->getIndex();
                 }
 
                 if (material.emissiveTexture.index >= 0) {
@@ -222,7 +243,7 @@ void M1kModel::loadModelFromGLTF(const std::string& filepath) {
                             std::make_shared<M1kTexture>(m1K_device_,
                                                          model_directory_path_ + "/" + image.uri);
                     }
-                    material_set.emissive_texture  = textures_[image.uri];
+                    material_set.emissive_texture_handle  = textures_[image.uri]->getIndex();
 
                     const auto& factor = material.emissiveFactor;
                     material_set.emissive_factor = glm::vec3(factor[0],factor[1],factor[2]);
@@ -234,7 +255,7 @@ void M1kModel::loadModelFromGLTF(const std::string& filepath) {
                         factor[2] << "," <<
                         ")" << std::endl;
                 } else {
-                    material_set.emissive_texture  = textures_["dummy_texture"];
+                    material_set.emissive_texture_handle  = dummy_texture_->getIndex();
                 }
 
                 auto it = material.extensions.find("KHR_materials_clearcoat");

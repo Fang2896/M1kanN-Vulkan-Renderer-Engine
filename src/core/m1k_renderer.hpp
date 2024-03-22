@@ -41,6 +41,8 @@ class M1kRenderer {
 
     VkCommandBuffer beginFrame();
     void endFrame();
+    void submitQueue();
+
     void beginSwapChainRenderPass(VkCommandBuffer command_buffer);
     void endSwapChainRenderPass(VkCommandBuffer command_buffer);
 

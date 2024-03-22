@@ -35,7 +35,12 @@ class M1kModel {
     M1kModel(const M1kModel&) = delete;
     M1kModel operator=(const M1kModel&) = delete;
 
-    void draw(VkCommandBuffer command_buffer, VkPipelineLayout& pipeline_layout);
+    void draw(VkCommandBuffer command_buffer,
+              VkDescriptorSet bindless_set,
+              VkPipelineLayout& pipeline_layout);
+
+    std::unordered_map<std::string, std::shared_ptr<M1kTexture>> to_update_textures_{};
+    std::shared_ptr<M1kTexture> dummy_texture_;
 
    private:
     void loadModelFromGLTF(const std::string& filepath);

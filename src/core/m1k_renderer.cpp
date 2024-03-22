@@ -104,7 +104,10 @@ void M1kRenderer::endFrame() {
     if(vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer_");
     }
+}
 
+void M1kRenderer::submitQueue() {
+    auto command_buffer = getCurrentCommandBuffer();
     auto result = m1k_swap_chain_->submitCommandBuffers(&command_buffer, &current_image_index_);
 
     if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m1k_window_.wasWindowResized()) {

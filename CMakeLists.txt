@@ -70,7 +70,8 @@ target_sources(${MY_ENGINE_NAME} PRIVATE ${COMMON_SOURCES}
         src/utils/m1k_utils.cpp
 
         src/systems/point_light_system.cpp
-        src/systems/pbr_render_system.cpp
+        # src/systems/pbr_render_system.cpp
+        src/systems/bindless_pbr_render_system.cpp
 )
 
 

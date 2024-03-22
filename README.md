@@ -14,6 +14,7 @@ This little engine is used to learn **Vulkan** and reproduce some CG algorithms.
 * [ ] Cleaning useless code
 * [ ] Use PushConstant to transfer data which will change every frame (e.g. View Matrix)
 * [ ] Bindless function / render pipeline.
+* [ ] Sampler setting according to glTF
 
 
 ## Agreements

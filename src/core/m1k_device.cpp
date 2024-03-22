@@ -176,13 +176,24 @@ void M1kDevice::createLogicalDevice() {
     deviceFeatures.samplerAnisotropy = VK_TRUE;
     deviceFeatures.sampleRateShading = VK_TRUE;
 
+    // features2 for bindless function
+    VkPhysicalDeviceFeatures2 physical_device_features_2 = {
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2
+    };
+    physical_device_features_2.features = deviceFeatures;
+    vkGetPhysicalDeviceFeatures2(
+        physical_device_,
+        &physical_device_features_2 );
+
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
-    createInfo.pEnabledFeatures = &deviceFeatures;
+    // because we already use feature2 for more detailed control!
+    // set it to nullptr
+    createInfo.pEnabledFeatures = nullptr;
     createInfo.enabledExtensionCount = static_cast<uint32_t>(device_extensions_.size());
     createInfo.ppEnabledExtensionNames = device_extensions_.data();
 
@@ -193,6 +204,12 @@ void M1kDevice::createLogicalDevice() {
         createInfo.ppEnabledLayerNames = validation_layers_.data();
     } else {
         createInfo.enabledLayerCount = 0;
+    }
+
+    // for bindless function
+    createInfo.pNext = &physical_device_features_2;
+    if(is_bindless_supported_) {
+        physical_device_features_2.pNext = &indexing_features_;
     }
 
     if (vkCreateDevice(physical_device_, &createInfo, nullptr, &device_) != VK_SUCCESS) {
@@ -233,8 +250,20 @@ bool M1kDevice::isDeviceSuitable(VkPhysicalDevice device) {
     VkPhysicalDeviceFeatures supportedFeatures;
     vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 
-    return indices.isComplete() && extensionsSupported && swapChainAdequate &&
-           supportedFeatures.samplerAnisotropy;
+    // check if the bindless feature
+    VkPhysicalDeviceFeatures2 device_features_2 {
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        &indexing_features_
+    };
+    vkGetPhysicalDeviceFeatures2(device, &device_features_2);
+    is_bindless_supported_ = indexing_features_.descriptorBindingPartiallyBound &&
+                             indexing_features_.runtimeDescriptorArray;
+
+    return indices.isComplete() &&
+           extensionsSupported &&
+           swapChainAdequate &&
+           supportedFeatures.samplerAnisotropy &&
+           is_bindless_supported_;
 }
 
 VkSampleCountFlagBits M1kDevice::getMaxUsableSampleCount() {

@@ -13,11 +13,14 @@
 #include "ui/m1k_camera.hpp"
 #include "utils/m1k_utils.hpp"
 
-#include "systems/pbr_render_system.hpp"
+// #include "systems/pbr_render_system.hpp"
 #include "systems/point_light_system.hpp"
+#include "systems/bindless_pbr_render_system.hpp"
 
 #include "ui/keyboard_movement_controller.hpp"
 #include "ui/m1k_window.hpp"
+
+#include "m1k_config.hpp"
 
 // std
 #include <memory>
@@ -26,8 +29,8 @@ namespace m1k {
 
 class M1kApplication {
    public:
-    static constexpr int kWidth = 1366;
-    static constexpr int kHeight = 768;
+    const int kWidth = kWindowWidth;
+    const int kHeight = kWindowHeight;
 
     M1kApplication();
     ~M1kApplication();
@@ -54,14 +57,17 @@ class M1kApplication {
     // 这个unique_ptr总觉得要暴雷，最好注意一下内存管理
     std::unique_ptr<M1kDescriptorSetLayout> global_set_layout_{};
     std::unique_ptr<M1kDescriptorSetLayout> pbr_set_layout_{};
+    std::unique_ptr<M1kDescriptorSetLayout> bindless_set_layout_{};
 
     std::unique_ptr<M1kDescriptorPool> global_pool_{};
+    std::unique_ptr<M1kDescriptorPool> bindless_pool_{};
     std::unique_ptr<M1kDescriptorPool> imgui_pool_{};
 
-    M1kGameObject::Map game_objects_;
+    M1kGameObject::Map game_objects_{};
 
     std::unique_ptr<PointLightSystem> point_light_system_;
-    std::unique_ptr<PbrRenderSystem> pbr_render_system_;
+    // std::unique_ptr<PbrRenderSystem> pbr_render_system_;
+    std::unique_ptr<BindlessPbrRenderSystem> bindless_pbr_render_system_;
 
     // state information
     bool is_displaying_test_scene_ = false;

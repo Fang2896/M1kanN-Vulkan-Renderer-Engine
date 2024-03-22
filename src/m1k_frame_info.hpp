@@ -20,6 +20,7 @@ struct FrameInfo {
     VkCommandBuffer command_buffer;
     M1kCamera &camera;
     VkDescriptorSet global_descriptor_set;
+    VkDescriptorSet bindless_descriptor_set;
     M1kGameObject::Map &game_objects;
 };
 

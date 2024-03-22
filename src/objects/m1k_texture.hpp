@@ -18,6 +18,9 @@ class M1kTexture {
 
     VkDescriptorImageInfo& getDescriptorImageInfo();
     const std::string& getTextureFilePath();
+    uint32_t getIndex() const { return index_; }
+
+    static uint32_t next_texture_index;
 
 private:
     void createTextureImage(const std::string& path);
@@ -47,6 +50,8 @@ private:
     VkSampler m1k_texture_sampler_;
 
     VkDescriptorImageInfo m1k_image_info_{};
+
+    const uint32_t index_;
 };
 
 }

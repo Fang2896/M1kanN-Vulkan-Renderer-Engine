@@ -108,12 +108,25 @@ void M1kMesh::createDescriptorSets(M1kDescriptorSetLayout &set_layout, M1kDescri
     material_ubo.model = material_set_.transform;
     material_ubo.model_inv = material_set_.inv_transform;
 
+    material_ubo.color_normal_emi_occ_texture_handles.x = material_set_.base_color_texture_handle;
     material_ubo.base_color_factor = material_set_.base_color_factor;
+
+    material_ubo.color_normal_emi_occ_texture_handles.y = material_set_.normal_texture_handle;
+    material_ubo.nor_occ_rough_meta_factor.x = material_set_.normal_scale;
+
+    material_ubo.color_normal_emi_occ_texture_handles.w = material_set_.occlusion_texture_handle;
+    material_ubo.nor_occ_rough_meta_factor.y = material_set_.occlusion_factor;
+
+    material_ubo.rough_meta_flags.x = material_set_.roughness_metalness_texture_handle;
+    material_ubo.nor_occ_rough_meta_factor.z = material_set_.roughness_factor;
+
+    material_ubo.rough_meta_flags.y = material_set_.roughness_metalness_texture_handle;
+    material_ubo.nor_occ_rough_meta_factor.w = material_set_.metallic_factor;
+
+    material_ubo.color_normal_emi_occ_texture_handles.z = material_set_.emissive_texture_handle;
     material_ubo.emissive_factor = material_set_.emissive_factor;
-    material_ubo.metallic_factor = material_set_.metallic_factor;
-    material_ubo.roughness_factor = material_set_.roughness_factor;
-    material_ubo.occlusion_factor = material_set_.occlusion_factor;
-    material_ubo.flags = flags_;
+
+    material_ubo.rough_meta_flags.z = flags_;
 
     material_ubo_buffer_->writeToBuffer(&material_ubo);
     material_ubo_buffer_->flush();
@@ -122,21 +135,21 @@ void M1kMesh::createDescriptorSets(M1kDescriptorSetLayout &set_layout, M1kDescri
     auto writer = M1kDescriptorWriter(set_layout, pool)
         .writeBuffer(0, &material_buffer_info);
 
-    if(material_set_.base_color_texture != nullptr) {
-        writer.writeImage(1, &material_set_.base_color_texture->getDescriptorImageInfo());
-    }
-    if(material_set_.normal_texture != nullptr) {
-        writer.writeImage(2, &material_set_.normal_texture->getDescriptorImageInfo());
-    }
-    if(material_set_.roughness_metalness_texture != nullptr) {
-        writer.writeImage(3, &material_set_.roughness_metalness_texture->getDescriptorImageInfo());
-    }
-    if(material_set_.occlusion_texture != nullptr) {
-        writer.writeImage(4, &material_set_.occlusion_texture->getDescriptorImageInfo());
-    }
-    if(material_set_.emissive_texture != nullptr) {
-        writer.writeImage(5, &material_set_.emissive_texture->getDescriptorImageInfo());
-    }
+//    if(material_set_.base_color_texture != nullptr) {
+//        writer.writeImage(1, &material_set_.base_color_texture->getDescriptorImageInfo());
+//    }
+//    if(material_set_.normal_texture != nullptr) {
+//        writer.writeImage(2, &material_set_.normal_texture->getDescriptorImageInfo());
+//    }
+//    if(material_set_.roughness_metalness_texture != nullptr) {
+//        writer.writeImage(3, &material_set_.roughness_metalness_texture->getDescriptorImageInfo());
+//    }
+//    if(material_set_.occlusion_texture != nullptr) {
+//        writer.writeImage(4, &material_set_.occlusion_texture->getDescriptorImageInfo());
+//    }
+//    if(material_set_.emissive_texture != nullptr) {
+//        writer.writeImage(5, &material_set_.emissive_texture->getDescriptorImageInfo());
+//    }
 
 
     writer.build(mesh_descriptor_set_);
@@ -147,7 +160,7 @@ void M1kMesh::bind(VkCommandBuffer command_buffer, VkPipelineLayout& pipeline_la
         command_buffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         pipeline_layout,
-        1, 1,
+        2, 1,
         &mesh_descriptor_set_,
         0, nullptr);
 

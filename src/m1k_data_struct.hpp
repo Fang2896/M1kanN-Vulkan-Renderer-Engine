@@ -32,13 +32,26 @@ struct alignas( 16 ) MaterialUbo {
     glm::mat4 model;
     glm::mat4 model_inv;
 
-    glm::vec4 base_color_factor;
-    glm::vec3 emissive_factor;
-    float  metallic_factor;
+    // x: color,
+    // y: normal,
+    // z: emissive,
+    // w: occlusion
+    glm::uvec4 color_normal_emi_occ_texture_handles{0};
 
-    float   roughness_factor;
-    float   occlusion_factor;
-    uint32_t   flags;
+    // x: roughness,
+    // y: metallic,
+    // z: flags
+    // w: ignore
+    glm::uvec4 rough_meta_flags{0};
+
+    // x: normal_scale
+    // y: occlusion_factor
+    // z: roughness_factor
+    // w: metallic_factor
+    glm::vec4 nor_occ_rough_meta_factor{1.0f};
+
+    glm::vec3 emissive_factor{0.0f};
+    glm::vec4 base_color_factor{1.0f};
 };
 
 //struct MeshDraw {

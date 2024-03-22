@@ -38,18 +38,25 @@ struct M1kVertex {
 
 // for each mesh
 struct M1kMaterialSet {
-    std::shared_ptr<M1kTexture> base_color_texture{};            // bd = 1
-    std::shared_ptr<M1kTexture> roughness_metalness_texture{};  // bd = 2
-    std::shared_ptr<M1kTexture> occlusion_texture{};            // bd = 3
-    std::shared_ptr<M1kTexture> emissive_texture{};             // bd = 4
-    std::shared_ptr<M1kTexture> normal_texture{};               // bd = 5
+//    std::shared_ptr<M1kTexture> base_color_texture{};            // bd = 1
+//    std::shared_ptr<M1kTexture> roughness_metalness_texture{};  // bd = 2
+//    std::shared_ptr<M1kTexture> occlusion_texture{};            // bd = 3
+//    std::shared_ptr<M1kTexture> emissive_texture{};             // bd = 4
+//    std::shared_ptr<M1kTexture> normal_texture{};               // bd = 5
 //    std::shared_ptr<M1kTexture> null_texture{};
+
+    uint32_t base_color_texture_handle;
+    uint32_t normal_texture_handle;
+    uint32_t occlusion_texture_handle;
+    uint32_t roughness_metalness_texture_handle;
+    uint32_t emissive_texture_handle;
 
     glm::vec4 base_color_factor{1.0f};
     glm::vec3 emissive_factor{0.0f};
     float metallic_factor{1.0f};
     float roughness_factor{1.0f};
     float occlusion_factor{1.0f};
+    float normal_scale{1.0f};
 
     glm::mat4 transform{};
     glm::mat4 inv_transform{};

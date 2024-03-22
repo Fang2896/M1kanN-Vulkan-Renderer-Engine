@@ -18,23 +18,33 @@ class M1kDescriptorSetLayout {
 public:
     class Builder {
     public:
-        Builder(M1kDevice &M1kDevice) : m1k_device_{M1kDevice} {}
+        explicit Builder(M1kDevice &M1kDevice) : m1k_device_{M1kDevice}, bindings_{} {};
 
         Builder &addBinding(
             uint32_t binding,
             VkDescriptorType descriptor_type,
             VkShaderStageFlags stage_flags,
             uint32_t count = 1);
+
         std::unique_ptr<M1kDescriptorSetLayout> build() const;
+        std::unique_ptr<M1kDescriptorSetLayout> build_for_bindless() const;
 
     private:
         M1kDevice &m1k_device_;
-        std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings_{};
+        std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings_;
     };
 
     M1kDescriptorSetLayout(
-        M1kDevice &m1k_device, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings);
+        M1kDevice &m1k_device,
+        std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings);
+    M1kDescriptorSetLayout(
+        M1kDevice &m1k_device,
+        std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings,
+        bool isBindless);
+
+
     ~M1kDescriptorSetLayout();
+
     M1kDescriptorSetLayout(const M1kDescriptorSetLayout &) = delete;
     M1kDescriptorSetLayout &operator=(const M1kDescriptorSetLayout &) = delete;
 
@@ -77,6 +87,13 @@ public:
 
     bool allocateDescriptor(
         const VkDescriptorSetLayout descriptor_set_layout, VkDescriptorSet &descriptor) const;
+
+    static void getBindlessDescriptorSet(
+        M1kDevice &device,
+        VkDescriptorPool bindless_descriptor_pool,
+        VkDescriptorSetLayout bindless_descriptor_set_layout,
+        VkDescriptorSet &set,
+        uint32_t maxBindlessResource);
 
     void freeDescriptors(std::vector<VkDescriptorSet> &descriptors) const;
 

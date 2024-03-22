@@ -14,8 +14,10 @@
 
 namespace m1k {
 
+uint32_t M1kTexture::next_texture_index = 0;
+
 M1kTexture::M1kTexture(M1kDevice& device, const std::string& path)
-    : m1k_device_(device), file_path(path)
+    : m1k_device_(device), file_path(path), index_(next_texture_index++)
 {
     createTextureImage(path);
     createTextureImageView();

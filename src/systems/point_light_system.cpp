@@ -84,21 +84,23 @@ void PointLightSystem::update(FrameInfo &frame_info, GlobalUbo &ubo) {
         {0.f, -1.f, 0.f});
 
     int light_index = 0;
-    for(auto &kv : frame_info.game_objects) {
-        auto &obj = kv.second;
-        // filter
-        if(obj.point_light == nullptr)  continue;
+    if(frame_info.game_objects.size() != 0) {
+        for(auto &kv : frame_info.game_objects) {
+            auto &obj = kv.second;
+            // filter
+            if(obj.point_light == nullptr)  continue;
 
-        assert(light_index < MAX_LIGHTS && "Point lights exceed maximum specified.");
+            assert(light_index < MAX_LIGHTS && "Point lights exceed maximum specified.");
 
-        // update light position
-        obj.transform.translation = glm::vec3(rotate_light * glm::vec4(obj.transform.translation, 1.f));
+            // update light position
+            obj.transform.translation = glm::vec3(rotate_light * glm::vec4(obj.transform.translation, 1.f));
 
-        // copy light to ubo
-        ubo.point_lights[light_index].position = glm::vec4(obj.transform.translation, 1.0f);
-        ubo.point_lights[light_index].color = glm::vec4(obj.color, obj.point_light->light_intensity);
+            // copy light to ubo
+            ubo.point_lights[light_index].position = glm::vec4(obj.transform.translation, 1.0f);
+            ubo.point_lights[light_index].color = glm::vec4(obj.color, obj.point_light->light_intensity);
 
-        light_index++;
+            light_index++;
+        }
     }
 
     ubo.num_lights = light_index;

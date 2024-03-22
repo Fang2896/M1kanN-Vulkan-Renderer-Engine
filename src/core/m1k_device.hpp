@@ -127,9 +127,14 @@ class M1kDevice {
     const std::vector<const char *> device_extensions_ = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 #endif
 
-
     // tracer member variables
     VkSampleCountFlagBits msaa_samples_ = VK_SAMPLE_COUNT_1_BIT;
+
+    // bindless function:
+    bool is_bindless_supported_;
+    VkPhysicalDeviceDescriptorIndexingFeatures indexing_features_
+        { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+         nullptr };
 };
 
 }
