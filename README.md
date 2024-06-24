@@ -2,7 +2,8 @@
 
 This little engine is used to learn **Vulkan** and reproduce some CG algorithms.
 
-
+## Example
+![Example1](assets/example.png)
 
 ## TODO
 * [x] glTF model file load
